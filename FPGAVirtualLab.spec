@@ -32,6 +32,7 @@ exe = EXE(
     exclude_binaries=True,
     name="FPGAVirtualLab",
     icon=str(ROOT / "assets" / "icons" / "app.ico"),
+    version=str(ROOT / "installer" / "exe_version.txt"),   # author / copyright in file properties
     console=False,
     upx=False,
 )

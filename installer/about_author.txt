@@ -1,0 +1,17 @@
+FPGA Virtual Lab 1.1.0
+======================
+
+Created by XAffanX
+GitHub:  https://github.com/XAffanX
+Project: https://github.com/XAffanX/FPGA-Virtual-Lab
+
+Virtual Digilent FPGA boards (virtual_basys3, virtual_nexys4ddr) for
+bitstreams built in AMD Vivado. Load a .bit, or program the virtual board
+straight from Vivado's Hardware Manager, then use the switches, buttons,
+LEDs and seven-segment display as on the real board.
+
+Requirements: Windows 10/11 (64-bit). AMD Vivado must be installed to load
+.bit files. The Icarus Verilog simulator (free software, GPL) is included;
+its source is at https://github.com/steveicarus/iverilog
+
+Your design runs in a simulator - no real hardware is configured.

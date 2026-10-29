@@ -1,3 +1,6 @@
-"""FPGA Virtual Lab - Basys 3 virtual development board backed by a real HDL simulator."""
+"""FPGA Virtual Lab - virtual Digilent FPGA boards (Basys 3, Nexys 4 DDR) for bitstreams built in AMD Vivado."""
 __version__ = "1.1.0"
 APP_NAME = "FPGA Virtual Lab"
+AUTHOR = "XAffanX"
+AUTHOR_URL = "https://github.com/XAffanX"
+REPO_URL = "https://github.com/XAffanX/FPGA-Virtual-Lab"
