@@ -1,0 +1,30 @@
+{
+  "format": "fvl-project-1",
+  "name": "Project B - 4-bit counter",
+  "board": "basys3",
+  "description": "Counts clock cycles on LED3..LED0. BTNC resets. Use Step Clock or Slow speed.",
+  "sources": [
+    "counter.v"
+  ],
+  "top": "counter",
+  "xdc": "counter.xdc",
+  "language": "auto",
+  "power_on_init": true,
+  "reset": {
+    "port": "",
+    "active_high": true,
+    "cycles": 4
+  },
+  "simulation": {
+    "speed": "slow",
+    "record_waveforms": true
+  },
+  "mapping": {
+    "btnC": "BTNC",
+    "clk": "CLK100MHZ",
+    "led[0]": "LED0",
+    "led[1]": "LED1",
+    "led[2]": "LED2",
+    "led[3]": "LED3"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "format": "fvl-project-1",
+  "name": "Project E - seven-segment display",
+  "board": "basys3",
+  "description": "Switches shown as four multiplexed hex digits. BTNC lights a decimal point.",
+  "sources": [
+    "hex_to_7seg.v",
+    "seven_segment.v"
+  ],
+  "top": "seven_segment",
+  "xdc": "seven_segment.xdc",
+  "language": "auto",
+  "power_on_init": true,
+  "reset": {
+    "port": "",
+    "active_high": true,
+    "cycles": 4
+  },
+  "simulation": {
+    "speed": "fast",
+    "record_waveforms": true
+  },
+  "mapping": {
+    "an[0]": "AN0",
+    "an[1]": "AN1",
+    "an[2]": "AN2",
+    "an[3]": "AN3",
+    "btnC": "BTNC",
+    "clk": "CLK100MHZ",
+    "dp": "SEG_DP",
+    "seg[0]": "SEG_A",
+    "seg[1]": "SEG_B",
+    "seg[2]": "SEG_C",
+    "seg[3]": "SEG_D",
+    "seg[4]": "SEG_E",
+    "seg[5]": "SEG_F",
+    "seg[6]": "SEG_G",
+    "sw[0]": "SW0",
+    "sw[1]": "SW1",
+    "sw[2]": "SW2",
+    "sw[3]": "SW3",
+    "sw[4]": "SW4",
+    "sw[5]": "SW5",
+    "sw[6]": "SW6",
+    "sw[7]": "SW7",
+    "sw[8]": "SW8",
+    "sw[9]": "SW9",
+    "sw[10]": "SW10",
+    "sw[11]": "SW11",
+    "sw[12]": "SW12",
+    "sw[13]": "SW13",
+    "sw[14]": "SW14",
+    "sw[15]": "SW15"
+  }
+}
