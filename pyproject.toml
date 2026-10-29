@@ -1,6 +1,6 @@
 [project]
 name = "fpga-virtual-lab"
-version = "1.1.0"
+version = "1.2.0"
 description = "Virtual Digilent Basys 3 FPGA board driven by a real Verilog simulator (Icarus Verilog)"
 readme = "README.md"
 requires-python = ">=3.12"

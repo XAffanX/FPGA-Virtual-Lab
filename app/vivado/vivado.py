@@ -24,7 +24,7 @@ from app.utils.toolchain import CREATE_NO_WINDOW
 
 from .bitfile import BitInfo, read_bit_header
 
-EXPORT_FORMAT = 2
+EXPORT_FORMAT = 3          # 3: also timing netlist + SDF + worst slack
 GSR_PULSE_PS = 1     # global set/reset pulse at start-up (glbl.ROC_WIDTH); flip-flops load their INIT
 
 
@@ -106,8 +106,14 @@ set dcp [lindex $argv 0]
 set out [lindex $argv 1]
 open_checkpoint $dcp
 write_verilog -force -mode funcsim [file join $out netlist.v]
+write_verilog -force -mode timesim -sdf_anno false [file join $out netlist_ts.v]
+write_sdf -force -mode timesim [file join $out netlist.sdf]
+set wns "null"
+set tp [get_timing_paths -max_paths 1 -nworst 1 -setup -quiet]
+if {[llength $tp] > 0} { set s [get_property SLACK $tp]; if {$s ne ""} { set wns $s } }
 set f [open [file join $out pins.json] w]
 puts $f "\{"
+puts $f "  \"wns\": $wns,"
 puts $f "  \"top\": \"[get_property TOP [current_design]]\","
 puts $f "  \"part\": \"[get_property PART [current_design]]\","
 puts $f "  \"ports\": \["
@@ -137,6 +143,8 @@ class BitstreamDesign:
     unisims: Path
     notes: list[str] = field(default_factory=list)
     cached: bool = False
+    timing: bool = False                 # netlist carries Vivado's SDF delays
+    wns_ns: float | None = None          # worst setup slack from Vivado (negative = fails timing)
 
     def compile_args(self) -> list[str]:
         """Extra iverilog arguments: UNISIM library search + short start-up reset."""
@@ -158,7 +166,7 @@ def _cache_dir(dcp: Path) -> Path:
 
 
 def load_bitstream(bit_path: Path, vivado: Vivado, checkpoint: Path | None = None,
-                   log=lambda msg: None, timeout: float = 900) -> BitstreamDesign:
+                   log=lambda msg: None, timeout: float = 900, timing: bool = False) -> BitstreamDesign:
     """Validate a .bit, find its checkpoint and export the implemented netlist (cached)."""
     bit = read_bit_header(Path(bit_path).resolve())
     log(f"Bitstream {bit.path.name}: {bit.summary()}")
@@ -210,7 +218,22 @@ def load_bitstream(bit_path: Path, vivado: Vivado, checkpoint: Path | None = Non
         notes.append(f"part mismatch: bitstream {bit.full_part}, checkpoint {part}")
     pins = {name: pin for name, _d, pin in info["ports"] if pin}
     dirs = {name: d for name, d, _p in info["ports"]}
-    return BitstreamDesign(bit, checkpoint, netlist, top, part, pins, dirs, vivado.unisims, notes, cached)
+    wns = info.get("wns")
+    if timing:
+        from .sdf import annotate_files
+        ts, sdf, timed = out / "netlist_ts.v", out / "netlist.sdf", out / "netlist_timed.v"
+        if not (ts.is_file() and sdf.is_file()):
+            raise VivadoError("the timing netlist/SDF is missing from the export")
+        if not timed.is_file() or timed.stat().st_mtime < max(ts.stat().st_mtime, sdf.stat().st_mtime):
+            rep = annotate_files(ts, sdf, top, timed)
+            log(f"Timing simulation: {rep.pins_delayed} pin delays from {rep.cells} cells annotated "
+                f"(longest {rep.max_path_ps / 1000:.2f} ns)")
+        netlist = timed
+        if wns is not None and wns < 0:
+            notes.append(f"Vivado timing: this design FAILS timing at 100 MHz (worst negative slack "
+                         f"{wns:.3f} ns) - expect wrong values, as on the real board")
+    return BitstreamDesign(bit, checkpoint, netlist, top, part, pins, dirs, vivado.unisims, notes, cached,
+                           timing, wns)
 
 
 def mapping_from_pins(design: BitstreamDesign, board) -> tuple["Mapping", list[str]]:

@@ -3,8 +3,10 @@
 The harness turns a normal `vvp` process into an interactive simulator:
 
 * It instantiates the user's top module and connects every port to a harness
-  register (inputs) or wire (outputs).
+  register (inputs), wire (outputs) or pulled-up wire (inouts).
 * It drives the board clock itself (10 ns period = 100 MHz, logical time).
+* Board peripherals (UART, VGA monitor, sensors ...) are Verilog models placed in the harness: they
+  can drive design inputs ("overrides"), drive inout bits (open-drain) and read any output.
 * It reads commands from STDIN with `$fscanf` and answers on STDOUT, so one
   persistent simulator process serves every GUI interaction.
 
@@ -14,9 +16,12 @@ Command format (one per line):  ``<op:dec> <a:dec> <b:hex>``
 op    meaning
 ====  ==========================================================================
 0     query: report the current state only
-1     set input port #a to value b, then let combinational logic settle (1 ps)
+1     set input port #a to value b, then let combinational logic settle
 2     run a clock cycles; report up to b output-change events while running
 3     waveform recording on (a=1) / off (a=0)
+4     peripheral register a := b (UART byte to send, baud, sensor values ...)
+5     clock stopped: let outputs settle for 20 ns (timing simulation)
+5     clock stopped: let outputs settle (20 ns, timing simulation)
 9     quit
 ====  ==========================================================================
 
@@ -28,14 +33,14 @@ and run commands may emit event lines before it::
 
     @@FVL E <time_ps> <outputs:hex>
 
-`outputs` is the concatenation of all output ports, first output port in the
-least significant bits. Any other line on STDOUT was printed by the design
-itself ($display etc.) and is shown in the console.
+Peripheral models report with other ``@@FVL <letter>`` lines (U = UART byte, P = VGA pixels ...).
+`outputs` is the concatenation of all output and inout ports, first one in the least significant
+bits. Any other line on STDOUT was printed by the design itself ($display etc.).
 """
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from app.compiler.compiler import Port
@@ -44,7 +49,8 @@ PROTOCOL_PREFIX = "@@FVL"
 HALF_PERIOD_NS = 5.0       # 100 MHz board clock
 SETTLE_NS = 0.001          # 1 ps: time given to combinational logic after an input change
 
-OP_QUERY, OP_SET, OP_RUN, OP_DUMP, OP_QUIT = 0, 1, 2, 3, 9
+OP_QUERY, OP_SET, OP_RUN, OP_DUMP, OP_PERIPH, OP_SETTLE, OP_QUIT = 0, 1, 2, 3, 4, 5, 9
+N_PREGS = 32
 
 _SIMPLE_ID = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*$")
 
@@ -56,7 +62,7 @@ def vid(name: str) -> str:
 
 @dataclass
 class OutputLayout:
-    """Where each output port lives inside the concatenated output vector."""
+    """Where each output (or inout) port lives inside the concatenated output vector."""
     port_index: int
     offset: int
     width: int
@@ -65,24 +71,41 @@ class OutputLayout:
 def output_layout(ports: list[Port]) -> list[OutputLayout]:
     lay, off = [], 0
     for i, p in enumerate(ports):
-        if p.direction == "output":
+        if p.direction in ("output", "inout"):
             lay.append(OutputLayout(i, off, p.width))
             off += p.width
     return lay
 
 
+@dataclass
+class HarnessExtras:
+    """Peripheral hooks. Bit positions are packed positions inside a port (0 = rightmost)."""
+    overrides: dict[int, list[tuple[int, str]]] = field(default_factory=dict)       # input port -> (pos, expr)
+    inout_drivers: dict[int, list[tuple[int, str]]] = field(default_factory=dict)   # inout port -> (pos, 0/z expr)
+    event_mask: int | None = None        # output-vector bits whose changes are reported as events
+    code: list[str] = field(default_factory=list)                                   # peripheral models
+    per_run_end: list[str] = field(default_factory=list)                            # statements after each run
+
+
 def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | None = None, *,
                      vcd_path: Path | None = None, power_on_init: bool = False,
-                     record_initially: bool = False, startup_ns: float = SETTLE_NS) -> str:
+                     record_initially: bool = False, startup_ns: float = SETTLE_NS,
+                     extras: HarnessExtras | None = None, timing: bool = False) -> str:
     """Return the Verilog source of the interactive harness module `fvl_tb`.
 
     clock_masks: {input port index: bit mask of the bits driven by the board clock}.
+    timing: real gate/wire delays are present - inputs get 20 ns to propagate while the clock is
+    stopped, and outputs are read just before the next rising edge instead of 1 ps after the
+    falling edge.
     """
     clock_masks = clock_masks or {}
+    ex = extras or HarnessExtras()
     inputs = [(i, p) for i, p in enumerate(ports) if p.direction == "input"]
-    outputs = [(i, p) for i, p in enumerate(ports) if p.direction == "output"]
+    outs = [(i, p) for i, p in enumerate(ports) if p.direction in ("output", "inout")]
     max_in = max([p.width for _, p in inputs] + [64])
-    total_out = sum(p.width for _, p in outputs)
+    total_out = sum(p.width for _, p in outs)
+    set_settle = 20.0 if timing else SETTLE_NS
+    run_settle = HALF_PERIOD_NS - 0.1 if timing else SETTLE_NS
 
     L: list[str] = []
     a = L.append
@@ -98,37 +121,53 @@ def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | 
     a("  reg fvl_running = 1'b0;")
     a("  reg fvl_overflow = 1'b0;")
     a("  reg [63:0] fvl_evmax = 64'd0, fvl_evcount = 64'd0;")
+    a(f"  reg [31:0] fvl_preg [0:{N_PREGS - 1}];     // peripheral registers (op 4)")
+    a("  integer fvl_preg_last = -1;")
+    a("  reg [31:0] fvl_preg_ev = 0;              // increments on every peripheral register write")
+    a("  integer fvl_k;")
     for i, p in inputs:
         w = p.width
         # No initializer: the power-on value comes from a +fvl_i<k>=<hex> plusarg at time 0, so
         # inputs never glitch through 0 (an active-low reset tied high must not see a negedge).
         a(f"  reg  [{w - 1}:0] fvl_i{i};   // input  {p.name}{p.range_text()}")
-        mask = clock_masks.get(i, 0)
-        if mask:
-            a(f"  wire [{w - 1}:0] fvl_p{i} = (fvl_i{i} & ~{w}'h{mask:x}) | ({{{w}{{fvl_clk}}}} & {w}'h{mask:x});")
+        drive = [(pos, "fvl_clk") for pos in range(w) if (clock_masks.get(i, 0) >> pos) & 1]
+        drive += [(pos, e) for pos, e in ex.overrides.get(i, []) if not (clock_masks.get(i, 0) >> pos) & 1]
+        if drive:
+            bits = {pos: e for pos, e in drive}
+            parts = [f"({bits[pos]})" if pos in bits else f"fvl_i{i}[{pos}]" for pos in range(w - 1, -1, -1)]
+            a(f"  wire [{w - 1}:0] fvl_p{i} = {{{', '.join(parts)}}};")
         else:
             a(f"  wire [{w - 1}:0] fvl_p{i} = fvl_i{i};")
-    for i, p in outputs:
-        a(f"  wire [{p.width - 1}:0] fvl_o{i};   // output {p.name}{p.range_text()}")
-    if outputs:
-        cat = ", ".join(f"fvl_o{i}" for i, _ in reversed(outputs))
+    for i, p in outs:
+        kind = "output" if p.direction == "output" else "inout "
+        a(f"  wire [{p.width - 1}:0] fvl_o{i};   // {kind} {p.name}{p.range_text()}")
+        if p.direction == "inout":
+            for pos in range(p.width):
+                a(f"  pullup (fvl_o{i}[{pos}]);")
+            for pos, e in ex.inout_drivers.get(i, []):
+                a(f"  assign fvl_o{i}[{pos}] = {e};")
+    if outs:
+        cat = ", ".join(f"fvl_o{i}" for i, _ in reversed(outs))
         a(f"  wire [{total_out - 1}:0] fvl_out = {{{cat}}};")
     else:
         a("  wire [0:0] fvl_out = 1'b0;")
+    width = max(1, total_out)
+    if ex.event_mask is not None and ex.event_mask != (1 << width) - 1:
+        a(f"  wire [{width - 1}:0] fvl_evsrc = fvl_out & {width}'h{ex.event_mask:x};")
+    else:
+        a(f"  wire [{width - 1}:0] fvl_evsrc = fvl_out;")
 
     conns = []
     for i, p in enumerate(ports):
         if p.direction == "input":
             conns.append(f"    .{vid(p.name)}(fvl_p{i})")
-        elif p.direction == "output":
-            conns.append(f"    .{vid(p.name)}(fvl_o{i})")
         else:
-            conns.append(f"    .{vid(p.name)}()")
+            conns.append(f"    .{vid(p.name)}(fvl_o{i})")
     a(f"  {vid(top)} fvl_dut (")
     a(",\n".join(conns))
     a("  );")
 
-    a("  always @(fvl_out) if (fvl_running) begin")
+    a("  always @(fvl_evsrc) if (fvl_running) begin")
     a("    if (fvl_evcount < fvl_evmax) begin")
     a(f'      $fwrite(32\'h8000_0001, "{PROTOCOL_PREFIX} E %0t %h\\n", $realtime, fvl_out);')
     a("      fvl_evcount = fvl_evcount + 1;")
@@ -141,11 +180,15 @@ def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | 
     a("    $fflush(32'h8000_0001);")
     a("  end endtask")
 
-    a("  task fvl_settle; begin")
-    a(f"    #({SETTLE_NS}); fvl_low = fvl_low + {SETTLE_NS};")
+    a("  task fvl_settle(input real t); begin")
+    a("    #(t); fvl_low = fvl_low + t;")
     a("  end endtask")
 
+    for block in ex.code:
+        a(block)
+
     a("  initial begin")
+    a(f"    for (fvl_k = 0; fvl_k < {N_PREGS}; fvl_k = fvl_k + 1) fvl_preg[fvl_k] = 0;")
     for i, _ in inputs:
         a(f'    if (!$value$plusargs("fvl_i{i}=%h", fvl_i{i})) fvl_i{i} = 0;')
     a("    $timeformat(-12, 0, \"\", 1);")
@@ -158,7 +201,7 @@ def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | 
     if power_on_init:
         a("    $fvl_power_on_init(fvl_dut);")
     # Time for start-up values to reach the outputs before the first report (vendor primitive
-    # models such as UNISIM FDRE have a 100 ps clock-to-out delay).
+    # models such as UNISIM FDRE have a 100 ps clock-to-out delay; timing netlists much more).
     a(f"    #({startup_ns}); fvl_low = {startup_ns};")
     a("    fvl_report;")
     a("    forever begin")
@@ -172,7 +215,7 @@ def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | 
             a(f"            {i}: fvl_i{i} = fvl_b[{p.width - 1}:0];")
         a("            default: ;")
         a("          endcase")
-    a("          fvl_settle;")
+    a(f"          fvl_settle({set_settle});")
     a("        end")
     a(f"        {OP_RUN}: begin")
     a("          fvl_evmax = fvl_b; fvl_evcount = 0; fvl_overflow = 1'b0; fvl_running = 1'b1;")
@@ -181,8 +224,10 @@ def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | 
     a("            fvl_clk = 1'b1; fvl_cycles = fvl_cycles + 1;")
     a(f"            #({HALF_PERIOD_NS}) fvl_clk = 1'b0; fvl_low = 0.0;")
     a("          end")
-    a("          fvl_settle;")
+    a(f"          fvl_settle({run_settle});")
     a("          fvl_running = 1'b0;")
+    for stmt in ex.per_run_end:
+        a(f"          {stmt}")
     if vcd_path is not None:
         a("          $dumpflush;")
     a("        end")
@@ -191,6 +236,13 @@ def generate_harness(top: str, ports: list[Port], clock_masks: dict[int, int] | 
         a("          if (fvl_a != 0) $dumpon; else $dumpoff;")
         a("          $dumpflush;")
     a("        end")
+    a(f"        {OP_PERIPH}: begin")
+    a(f"          if (fvl_a >= 0 && fvl_a < {N_PREGS}) begin")
+    a("            fvl_preg[fvl_a] = fvl_b[31:0]; fvl_preg_last = fvl_a; fvl_preg_ev = fvl_preg_ev + 1;")
+    a("          end")
+    a("          #0;")
+    a("        end")
+    a(f"        {OP_SETTLE}: fvl_settle(20.0);")
     a(f"        {OP_QUIT}: $finish;")
     a("        default: ;")
     a("      endcase")

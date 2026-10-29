@@ -102,6 +102,7 @@ class ResolvedMapping:
     clock_bits: list[BitRef] = field(default_factory=list)
     constants: list[tuple[BitRef, int]] = field(default_factory=list)
     outputs: dict[str, BitRef] = field(default_factory=dict)         # output resource -> port bit
+    inouts: dict[str, BitRef] = field(default_factory=dict)          # bidirectional resource -> inout bit
     issues: list[Issue] = field(default_factory=list)
 
     @property
@@ -152,10 +153,6 @@ def resolve(mapping: Mapping, ports: list[Port], board: Board) -> ResolvedMappin
             rm.issues.append(Issue("error", str(exc), key))
             continue
         ref = BitRef(pi, pos)
-        if port.direction == "inout":
-            rm.issues.append(Issue("warning", f"'{key}': inout ports are not simulated in V1 "
-                                   "(mapping ignored)", key))
-            continue
         if target in CONSTANTS:
             if port.direction != "input":
                 rm.issues.append(Issue("error", f"'{key}' is an output and cannot be tied to a constant", key))
@@ -167,11 +164,20 @@ def resolve(mapping: Mapping, ports: list[Port], board: Board) -> ResolvedMappin
         if res is None:
             rm.issues.append(Issue("error", f"'{key}' is mapped to unknown board resource '{target}'", key))
             continue
+        if port.direction == "inout":
+            if res.dir != "io":
+                rm.issues.append(Issue("error", f"inout '{key}' is mapped to {res.id}, which is not a "
+                                       "bidirectional pin", key))
+                continue
+            mapped.add((pi, pos))
+            rm.inouts[res.id] = ref
+            rm.outputs[res.id] = ref          # its level is visible like an output (pulled up when released)
+            continue
         if port.direction == "input" and not res.is_input:
             rm.issues.append(Issue("error", f"invalid direction: input '{key}' is mapped to {res.id}, "
                                    f"which is an output ({res.kind}) of the FPGA", key))
             continue
-        if port.direction == "output" and res.is_input:
+        if port.direction == "output" and not res.is_output:
             rm.issues.append(Issue("error", f"invalid direction: output '{key}' is mapped to {res.id}, "
                                    f"which is an input ({res.kind}) of the FPGA", key))
             continue
@@ -196,9 +202,11 @@ def resolve(mapping: Mapping, ports: list[Port], board: Board) -> ResolvedMappin
 
     for pi, port in enumerate(ports):
         missing = [idx for idx in port.indices() if (pi, port.position(idx if port.is_vector else None)) not in mapped]
-        if not missing or port.direction == "inout":
-            if port.direction == "inout":
-                rm.issues.append(Issue("warning", f"inout port '{port.name}' is left unconnected"))
+        if not missing:
+            continue
+        if port.direction == "inout":
+            rm.issues.append(Issue("info", f"inout port '{port.name}' is not on a board pin: it only sees its "
+                                   "pull-up"))
             continue
         label = port.name + port.range_text()
         if len(missing) == port.width:

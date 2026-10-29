@@ -1,5 +1,5 @@
 """FPGA Virtual Lab - virtual Digilent FPGA boards (Basys 3, Nexys 4 DDR) for bitstreams built in AMD Vivado."""
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 APP_NAME = "FPGA Virtual Lab"
 AUTHOR = "XAffanX"
 AUTHOR_URL = "https://github.com/XAffanX"

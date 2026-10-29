@@ -145,7 +145,7 @@ set_property PACKAGE_PIN V17 [get_ports {sw[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {sw[0]}]
 #set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {sw[1]}]
 set_property -dict { PACKAGE_PIN U16   IOSTANDARD LVCMOS33 } [get_ports {led[0]}]
-set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports {led[1]}]; # Pmod JA
+set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports {led[1]}]; # USB HID
 set_property -dict { PACKAGE_PIN Z99   IOSTANDARD LVCMOS33 } [get_ports {led[2]}]
 set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports btnC]
 """
@@ -157,7 +157,7 @@ def test_xdc_parse(board):
     assert e["clk"] == "CLK100MHZ" and e["sw[0]"] == "SW0" and e["led[0]"] == "LED0" and e["btnC"] == "BTNC"
     assert "sw[1]" not in e                      # commented out
     msgs = " | ".join(i.message for i in r.issues)
-    assert "Pmod JA" in msgs                     # unsupported but known pin
+    assert "PS2Clk" in msgs                      # unsupported but known pin
     assert any(i.severity == "error" and "Z99" in i.message for i in r.issues)
 
 
@@ -224,6 +224,22 @@ def test_vcd_reader_incremental(tmp_path):
     assert q.value_at(20_000_000) == "0101"
     assert format_value("0101", 4) == "5" and format_value("x1", 8) == "x1"
     assert format_value("11111111", 8, "sdec") == "-1"
+
+
+def test_vcd_reader_memory_limit(tmp_path):
+    path = tmp_path / "w.vcd"
+    body = "".join(f"#{t * 10}\n{t % 2}!\n" for t in range(1, 1001))
+    path.write_text("$timescale 1ps $end\n$scope module top $end\n$var wire 1 ! clk $end\n$upscope $end\n"
+                    "$enddefinitions $end\n#0\n$dumpvars\n0!\n$end\n" + body)
+    r = VcdReader(path, max_changes=100)
+    r.poll()
+    clk = r.by_name["top.clk"]
+    assert r.truncated and 100 <= len(clk.times) <= 102
+    assert r.end_time_fs < 10_000 * 1000                    # stopped loading at the limit
+    assert clk.value_at(r.end_time_fs) in ("0", "1")        # data up to the limit is complete
+    with open(path, "a") as f:
+        f.write("#20000\n1!\n")
+    assert not r.poll()                                     # nothing more is loaded
 
 
 def test_waveform_recording_from_simulation(open_example):

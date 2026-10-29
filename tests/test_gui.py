@@ -318,3 +318,74 @@ def test_connect_to_vivado_dialog(qapp, win, monkeypatch):
         assert win.vb.hw_server is None and "open_hw_target -xvc_url localhost:26541" in tcl
     finally:
         win.vb.stop_xvc()
+
+
+# ---------------------------------------------------------------------------- Devices page
+def test_devices_uart_terminal(qapp, win):
+    from app.hardware.virtual_board import HwState as H
+    win.vb.set_peripheral("baud", 115200)
+    win.vb.power_on()
+    program(qapp, win, FIX / "vivado_uart_echo" / "uart_echo.bit")
+    assert win.vb.design_info["uart"] and win.vb.design_info["uart_rx"]
+    win.goto("devices")
+    t = win.devices.uart
+    t.line.setText("hello")
+    t.ending.setCurrentIndex(0)
+    t.send()
+    win.set_speed("max")
+    win.vb.run()
+    assert wait_for(qapp, lambda: "hello" in t.out.toPlainText(), 120), t.out.toPlainText()
+    win.vb.pause()
+    assert wait_for(qapp, lambda: win.vb.state == H.PAUSED)
+    shot(win, "06_uart_terminal")
+
+
+def test_devices_vga_screen_and_timing_option(qapp, win):
+    from app.hardware.virtual_board import HwState as H
+    win.vb.power_on()
+    program(qapp, win, FIX / "vivado_vga_test" / "vga_test.bit")
+    assert win.vb.design_info["vga"]
+    win.goto("devices")
+    win.devices.setCurrentIndex(1)
+    win.set_speed("max")
+    win.vb.run()
+    vga = win.devices.vga
+    assert wait_for(qapp, lambda: vga._img is not None and "frame" in vga.status.text(), 240)
+    assert wait_for(qapp, lambda: vga._img.pixelColor(10, 40).name() == "#ff0000", 120)
+    win.vb.pause()
+    assert wait_for(qapp, lambda: win.vb.state == H.PAUSED)
+    shot(win, "07_vga_screen")
+    assert win.panel.values["timing"].text().startswith("Functional")
+
+
+def test_devices_nexys_sensors_tab(qapp, win):
+    win.switch_board("nexys4ddr", ask=False)
+    assert win.devices.isTabVisible(3)
+    win.devices.sensors.temp.setValue(321)                # 32.1 C, remembered for programming
+    win.vb.power_on()
+    program(qapp, win, FIX / "vivado_nexys_sensors" / "nexys_sensors.bit")
+    info = win.vb.design_info
+    assert info["sensors"] == {"temp": True, "acl": True, "mic": True}
+    win.vb.step(150_000)
+    ov = win.board_widget.overlay
+    assert wait_for(qapp, lambda: counter_byte(ov, 0) == (int(32.1 * 16) << 3) >> 8, 120)
+    win.goto("devices")
+    win.devices.setCurrentIndex(3)
+    shot(win, "08_sensors")
+
+
+def counter_byte(ov, base):
+    return sum(int((ov.led_brightness[base + i] or 0) > 0.5) << i for i in range(8))
+
+
+def test_devices_pmod_tab(qapp, win):
+    win.vb.power_on()
+    program(qapp, win, FIX / "vivado_pmod_test" / "pmod_test.bit")
+    pm = win.devices.pmod
+    assert "JA7" in pm.inputs and "JA1" in pm.used
+    pm._toggle("JA7")                                       # click the input pin
+    win.vb.step(1)
+    assert wait_for(qapp, lambda: (win.board_widget.overlay.led_brightness[0] or 0) == 1.0)
+    win.goto("devices")
+    win.devices.setCurrentIndex(2)
+    shot(win, "09_pmod")

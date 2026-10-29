@@ -64,8 +64,9 @@
   * hold the key and Step, or
   * latch the button (right-click), or
   * press it while running. A press then lasts at least the configured minimum number of cycles.
-* **Unsupported I/O**. Pmod, VGA, USB-UART and PS/2 pins are recognized in XDC files but not
-  simulated. `inout` ports are left unconnected.
+* **Unsupported I/O**. DDR2, Ethernet, audio out, microSD, PS/2 and the XADC analog inputs are
+  recognised in XDC files but not simulated. `inout` ports are connected to a pulled-up wire;
+  only the I2C sensor drives one.
 * **SystemVerilog**. `.sv` files use `iverilog -g2012`, which covers only part of SystemVerilog.
   Unsupported constructs are reported as compile errors.
 * **`.bit` files** (`app/vivado/`). The configuration frames aren't decoded. The app simulates
@@ -141,3 +142,39 @@
 * **What was tested.** Tested with Vivado 2026.1 in batch (Tcl) mode, for detection, programming,
   status and the unknown-bitstream case. The GUI dialogs drive the same `hw_server`/Tcl commands
   but were not exercised by an automated test.
+
+
+## Board peripherals (`app/simulation/peripherals.py`)
+
+Peripherals are Verilog models generated into the harness when the design maps their pins.
+* The harness can override design input bits (UART RX, MISO, M_DATA), drive `inout` bits
+  open-drain with a pull-up (I2C SDA), and read any output.
+* Python configures the models through harness registers (op 4). The models report on stdout:
+  * `U` — a UART byte;
+  * `P x y rgb` — a VGA pixel run;
+  * `F` — a VGA frame start.
+* VGA pins are excluded from the LED event stream, so busy video doesn't crowd out LED and
+  display persistence.
+
+The VGA monitor assumes standard 640×480 timing (sync start, then 144 pixels to active video, and
+2+33 lines). The pixel clock is derived from the measured hsync period / 800, and the sync
+polarity is the shorter of the two levels.
+
+## Timing simulation (`app/vivado/sdf.py`)
+
+Icarus rejects Vivado's SDF, and the UNISIM `XIL_TIMING` models need timing-check delayed signals
+that Icarus doesn't implement. So the annotator:
+* removes `` `define XIL_TIMING ``;
+* parses the SDF (max corner);
+* replaces each cell pin connection with a delayed wire: inputs get interconnect + IOPATH delay;
+  sequential outputs get clock-to-Q.
+
+The harness then reads outputs just before the next rising edge (not 1 ps after the falling
+edge). Inputs get 20 ns to propagate, and op 5 lets outputs settle when the clock stops.
+
+### Limitations
+
+* **Delays use the max corner only.** Hold violations are only approximated.
+* **No setup/hold checks.** A late signal captures stale data rather than going metastable, and
+  no violation warning is printed; Vivado's timing report gives the full analysis.
+* **Clocked primitives without SDF IOPATHs** (e.g. some IP blocks) get only their wire delays.

@@ -433,57 +433,393 @@
       "pin": "W4",
       "xdc_name": "an[3]",
       "label": "AN3 (digit 3 enable, active low)"
+    },
+    {
+      "id": "UART_RX",
+      "kind": "uart_rx",
+      "dir": "in",
+      "pin": "B18",
+      "xdc_name": "RsRx",
+      "label": "USB-UART RX: data from the PC into the FPGA"
+    },
+    {
+      "id": "UART_TX",
+      "kind": "uart_tx",
+      "dir": "out",
+      "pin": "A18",
+      "xdc_name": "RsTx",
+      "label": "USB-UART TX: data from the FPGA to the PC"
+    },
+    {
+      "id": "VGA_R0",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "G19",
+      "xdc_name": "vgaRed[0]",
+      "label": "VGA vgaRed[0]"
+    },
+    {
+      "id": "VGA_R1",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "H19",
+      "xdc_name": "vgaRed[1]",
+      "label": "VGA vgaRed[1]"
+    },
+    {
+      "id": "VGA_R2",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "J19",
+      "xdc_name": "vgaRed[2]",
+      "label": "VGA vgaRed[2]"
+    },
+    {
+      "id": "VGA_R3",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "N19",
+      "xdc_name": "vgaRed[3]",
+      "label": "VGA vgaRed[3]"
+    },
+    {
+      "id": "VGA_G0",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "J17",
+      "xdc_name": "vgaGreen[0]",
+      "label": "VGA vgaGreen[0]"
+    },
+    {
+      "id": "VGA_G1",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "H17",
+      "xdc_name": "vgaGreen[1]",
+      "label": "VGA vgaGreen[1]"
+    },
+    {
+      "id": "VGA_G2",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "G17",
+      "xdc_name": "vgaGreen[2]",
+      "label": "VGA vgaGreen[2]"
+    },
+    {
+      "id": "VGA_G3",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "D17",
+      "xdc_name": "vgaGreen[3]",
+      "label": "VGA vgaGreen[3]"
+    },
+    {
+      "id": "VGA_B0",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "N18",
+      "xdc_name": "vgaBlue[0]",
+      "label": "VGA vgaBlue[0]"
+    },
+    {
+      "id": "VGA_B1",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "L18",
+      "xdc_name": "vgaBlue[1]",
+      "label": "VGA vgaBlue[1]"
+    },
+    {
+      "id": "VGA_B2",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "K18",
+      "xdc_name": "vgaBlue[2]",
+      "label": "VGA vgaBlue[2]"
+    },
+    {
+      "id": "VGA_B3",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "J18",
+      "xdc_name": "vgaBlue[3]",
+      "label": "VGA vgaBlue[3]"
+    },
+    {
+      "id": "VGA_HS",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "P19",
+      "xdc_name": "Hsync",
+      "label": "VGA horizontal sync"
+    },
+    {
+      "id": "VGA_VS",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "R19",
+      "xdc_name": "Vsync",
+      "label": "VGA vertical sync"
+    },
+    {
+      "id": "JA1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "J1",
+      "xdc_name": "JA[0]",
+      "label": "Pmod JA pin 1"
+    },
+    {
+      "id": "JA2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "L2",
+      "xdc_name": "JA[1]",
+      "label": "Pmod JA pin 2"
+    },
+    {
+      "id": "JA3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "J2",
+      "xdc_name": "JA[2]",
+      "label": "Pmod JA pin 3"
+    },
+    {
+      "id": "JA4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G2",
+      "xdc_name": "JA[3]",
+      "label": "Pmod JA pin 4"
+    },
+    {
+      "id": "JA7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H1",
+      "xdc_name": "JA[4]",
+      "label": "Pmod JA pin 7"
+    },
+    {
+      "id": "JA8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "K2",
+      "xdc_name": "JA[5]",
+      "label": "Pmod JA pin 8"
+    },
+    {
+      "id": "JA9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H2",
+      "xdc_name": "JA[6]",
+      "label": "Pmod JA pin 9"
+    },
+    {
+      "id": "JA10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G3",
+      "xdc_name": "JA[7]",
+      "label": "Pmod JA pin 10"
+    },
+    {
+      "id": "JB1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A14",
+      "xdc_name": "JB[0]",
+      "label": "Pmod JB pin 1"
+    },
+    {
+      "id": "JB2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A16",
+      "xdc_name": "JB[1]",
+      "label": "Pmod JB pin 2"
+    },
+    {
+      "id": "JB3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "B15",
+      "xdc_name": "JB[2]",
+      "label": "Pmod JB pin 3"
+    },
+    {
+      "id": "JB4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "B16",
+      "xdc_name": "JB[3]",
+      "label": "Pmod JB pin 4"
+    },
+    {
+      "id": "JB7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A15",
+      "xdc_name": "JB[4]",
+      "label": "Pmod JB pin 7"
+    },
+    {
+      "id": "JB8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A17",
+      "xdc_name": "JB[5]",
+      "label": "Pmod JB pin 8"
+    },
+    {
+      "id": "JB9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "C15",
+      "xdc_name": "JB[6]",
+      "label": "Pmod JB pin 9"
+    },
+    {
+      "id": "JB10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "C16",
+      "xdc_name": "JB[7]",
+      "label": "Pmod JB pin 10"
+    },
+    {
+      "id": "JC1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "K17",
+      "xdc_name": "JC[0]",
+      "label": "Pmod JC pin 1"
+    },
+    {
+      "id": "JC2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "M18",
+      "xdc_name": "JC[1]",
+      "label": "Pmod JC pin 2"
+    },
+    {
+      "id": "JC3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "N17",
+      "xdc_name": "JC[2]",
+      "label": "Pmod JC pin 3"
+    },
+    {
+      "id": "JC4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "P18",
+      "xdc_name": "JC[3]",
+      "label": "Pmod JC pin 4"
+    },
+    {
+      "id": "JC7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "L17",
+      "xdc_name": "JC[4]",
+      "label": "Pmod JC pin 7"
+    },
+    {
+      "id": "JC8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "M19",
+      "xdc_name": "JC[5]",
+      "label": "Pmod JC pin 8"
+    },
+    {
+      "id": "JC9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "P17",
+      "xdc_name": "JC[6]",
+      "label": "Pmod JC pin 9"
+    },
+    {
+      "id": "JC10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "R18",
+      "xdc_name": "JC[7]",
+      "label": "Pmod JC pin 10"
+    },
+    {
+      "id": "JXADC1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "J3",
+      "xdc_name": "JXADC[0]",
+      "label": "Pmod JXADC pin 1"
+    },
+    {
+      "id": "JXADC2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "L3",
+      "xdc_name": "JXADC[1]",
+      "label": "Pmod JXADC pin 2"
+    },
+    {
+      "id": "JXADC3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "M2",
+      "xdc_name": "JXADC[2]",
+      "label": "Pmod JXADC pin 3"
+    },
+    {
+      "id": "JXADC4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "N2",
+      "xdc_name": "JXADC[3]",
+      "label": "Pmod JXADC pin 4"
+    },
+    {
+      "id": "JXADC7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "K3",
+      "xdc_name": "JXADC[4]",
+      "label": "Pmod JXADC pin 7"
+    },
+    {
+      "id": "JXADC8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "M3",
+      "xdc_name": "JXADC[5]",
+      "label": "Pmod JXADC pin 8"
+    },
+    {
+      "id": "JXADC9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "M1",
+      "xdc_name": "JXADC[6]",
+      "label": "Pmod JXADC pin 9"
+    },
+    {
+      "id": "JXADC10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "N1",
+      "xdc_name": "JXADC[7]",
+      "label": "Pmod JXADC pin 10"
     }
   ],
   "unsupported_pins": {
-    "J1": "Pmod JA pin 1",
-    "L2": "Pmod JA pin 2",
-    "J2": "Pmod JA pin 3",
-    "G2": "Pmod JA pin 4",
-    "H1": "Pmod JA pin 7",
-    "K2": "Pmod JA pin 8",
-    "H2": "Pmod JA pin 9",
-    "G3": "Pmod JA pin 10",
-    "A14": "Pmod JB pin 1",
-    "A16": "Pmod JB pin 2",
-    "B15": "Pmod JB pin 3",
-    "B16": "Pmod JB pin 4",
-    "A15": "Pmod JB pin 7",
-    "A17": "Pmod JB pin 8",
-    "C15": "Pmod JB pin 9",
-    "C16": "Pmod JB pin 10",
-    "K17": "Pmod JC pin 1",
-    "M18": "Pmod JC pin 2",
-    "N17": "Pmod JC pin 3",
-    "P18": "Pmod JC pin 4",
-    "L17": "Pmod JC pin 7",
-    "M19": "Pmod JC pin 8",
-    "P17": "Pmod JC pin 9",
-    "R18": "Pmod JC pin 10",
-    "J3": "Pmod JXADC pin 1",
-    "L3": "Pmod JXADC pin 2",
-    "M2": "Pmod JXADC pin 3",
-    "N2": "Pmod JXADC pin 4",
-    "K3": "Pmod JXADC pin 7",
-    "M3": "Pmod JXADC pin 8",
-    "M1": "Pmod JXADC pin 9",
-    "N1": "Pmod JXADC pin 10",
-    "G19": "VGA vgaRed[0]",
-    "H19": "VGA vgaRed[1]",
-    "J19": "VGA vgaRed[2]",
-    "N19": "VGA vgaRed[3]",
-    "N18": "VGA vgaBlue[0]",
-    "L18": "VGA vgaBlue[1]",
-    "K18": "VGA vgaBlue[2]",
-    "J18": "VGA vgaBlue[3]",
-    "J17": "VGA vgaGreen[0]",
-    "H17": "VGA vgaGreen[1]",
-    "G17": "VGA vgaGreen[2]",
-    "D17": "VGA vgaGreen[3]",
-    "P19": "VGA Hsync",
-    "R19": "VGA Vsync",
-    "B18": "USB-UART RsRx",
-    "A18": "USB-UART RsTx",
     "C17": "USB HID PS2Clk",
     "B17": "USB HID PS2Data"
   }

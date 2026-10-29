@@ -526,63 +526,561 @@
       "xdc_name": "CPU_RESETN",
       "label": "CPU RESET (active low: reads 1 until pressed)",
       "active_low": true
+    },
+    {
+      "id": "UART_RX",
+      "kind": "uart_rx",
+      "dir": "in",
+      "pin": "C4",
+      "xdc_name": "UART_TXD_IN",
+      "label": "USB-UART RX: data from the PC into the FPGA"
+    },
+    {
+      "id": "UART_TX",
+      "kind": "uart_tx",
+      "dir": "out",
+      "pin": "D4",
+      "xdc_name": "UART_RXD_OUT",
+      "label": "USB-UART TX: data from the FPGA to the PC"
+    },
+    {
+      "id": "VGA_R0",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "A3",
+      "xdc_name": "VGA_R[0]",
+      "label": "VGA_R[0]"
+    },
+    {
+      "id": "VGA_R1",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "B4",
+      "xdc_name": "VGA_R[1]",
+      "label": "VGA_R[1]"
+    },
+    {
+      "id": "VGA_R2",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "C5",
+      "xdc_name": "VGA_R[2]",
+      "label": "VGA_R[2]"
+    },
+    {
+      "id": "VGA_R3",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "A4",
+      "xdc_name": "VGA_R[3]",
+      "label": "VGA_R[3]"
+    },
+    {
+      "id": "VGA_G0",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "C6",
+      "xdc_name": "VGA_G[0]",
+      "label": "VGA_G[0]"
+    },
+    {
+      "id": "VGA_G1",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "A5",
+      "xdc_name": "VGA_G[1]",
+      "label": "VGA_G[1]"
+    },
+    {
+      "id": "VGA_G2",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "B6",
+      "xdc_name": "VGA_G[2]",
+      "label": "VGA_G[2]"
+    },
+    {
+      "id": "VGA_G3",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "A6",
+      "xdc_name": "VGA_G[3]",
+      "label": "VGA_G[3]"
+    },
+    {
+      "id": "VGA_B0",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "B7",
+      "xdc_name": "VGA_B[0]",
+      "label": "VGA_B[0]"
+    },
+    {
+      "id": "VGA_B1",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "C7",
+      "xdc_name": "VGA_B[1]",
+      "label": "VGA_B[1]"
+    },
+    {
+      "id": "VGA_B2",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "D7",
+      "xdc_name": "VGA_B[2]",
+      "label": "VGA_B[2]"
+    },
+    {
+      "id": "VGA_B3",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "D8",
+      "xdc_name": "VGA_B[3]",
+      "label": "VGA_B[3]"
+    },
+    {
+      "id": "VGA_HS",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "B11",
+      "xdc_name": "VGA_HS",
+      "label": "VGA horizontal sync"
+    },
+    {
+      "id": "VGA_VS",
+      "kind": "vga",
+      "dir": "out",
+      "pin": "B12",
+      "xdc_name": "VGA_VS",
+      "label": "VGA vertical sync"
+    },
+    {
+      "id": "JA1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "C17",
+      "xdc_name": "JA[1]",
+      "label": "Pmod JA pin 1"
+    },
+    {
+      "id": "JA2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "D18",
+      "xdc_name": "JA[2]",
+      "label": "Pmod JA pin 2"
+    },
+    {
+      "id": "JA3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "E18",
+      "xdc_name": "JA[3]",
+      "label": "Pmod JA pin 3"
+    },
+    {
+      "id": "JA4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G17",
+      "xdc_name": "JA[4]",
+      "label": "Pmod JA pin 4"
+    },
+    {
+      "id": "JA7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "D17",
+      "xdc_name": "JA[7]",
+      "label": "Pmod JA pin 7"
+    },
+    {
+      "id": "JA8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "E17",
+      "xdc_name": "JA[8]",
+      "label": "Pmod JA pin 8"
+    },
+    {
+      "id": "JA9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "F18",
+      "xdc_name": "JA[9]",
+      "label": "Pmod JA pin 9"
+    },
+    {
+      "id": "JA10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G18",
+      "xdc_name": "JA[10]",
+      "label": "Pmod JA pin 10"
+    },
+    {
+      "id": "JB1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "D14",
+      "xdc_name": "JB[1]",
+      "label": "Pmod JB pin 1"
+    },
+    {
+      "id": "JB2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "F16",
+      "xdc_name": "JB[2]",
+      "label": "Pmod JB pin 2"
+    },
+    {
+      "id": "JB3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G16",
+      "xdc_name": "JB[3]",
+      "label": "Pmod JB pin 3"
+    },
+    {
+      "id": "JB4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H14",
+      "xdc_name": "JB[4]",
+      "label": "Pmod JB pin 4"
+    },
+    {
+      "id": "JB7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "E16",
+      "xdc_name": "JB[7]",
+      "label": "Pmod JB pin 7"
+    },
+    {
+      "id": "JB8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "F13",
+      "xdc_name": "JB[8]",
+      "label": "Pmod JB pin 8"
+    },
+    {
+      "id": "JB9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G13",
+      "xdc_name": "JB[9]",
+      "label": "Pmod JB pin 9"
+    },
+    {
+      "id": "JB10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H16",
+      "xdc_name": "JB[10]",
+      "label": "Pmod JB pin 10"
+    },
+    {
+      "id": "JC1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "K1",
+      "xdc_name": "JC[1]",
+      "label": "Pmod JC pin 1"
+    },
+    {
+      "id": "JC2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "F6",
+      "xdc_name": "JC[2]",
+      "label": "Pmod JC pin 2"
+    },
+    {
+      "id": "JC3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "J2",
+      "xdc_name": "JC[3]",
+      "label": "Pmod JC pin 3"
+    },
+    {
+      "id": "JC4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G6",
+      "xdc_name": "JC[4]",
+      "label": "Pmod JC pin 4"
+    },
+    {
+      "id": "JC7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "E7",
+      "xdc_name": "JC[7]",
+      "label": "Pmod JC pin 7"
+    },
+    {
+      "id": "JC8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "J3",
+      "xdc_name": "JC[8]",
+      "label": "Pmod JC pin 8"
+    },
+    {
+      "id": "JC9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "J4",
+      "xdc_name": "JC[9]",
+      "label": "Pmod JC pin 9"
+    },
+    {
+      "id": "JC10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "E6",
+      "xdc_name": "JC[10]",
+      "label": "Pmod JC pin 10"
+    },
+    {
+      "id": "JD1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H4",
+      "xdc_name": "JD[1]",
+      "label": "Pmod JD pin 1"
+    },
+    {
+      "id": "JD2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H1",
+      "xdc_name": "JD[2]",
+      "label": "Pmod JD pin 2"
+    },
+    {
+      "id": "JD3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G1",
+      "xdc_name": "JD[3]",
+      "label": "Pmod JD pin 3"
+    },
+    {
+      "id": "JD4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G3",
+      "xdc_name": "JD[4]",
+      "label": "Pmod JD pin 4"
+    },
+    {
+      "id": "JD7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "H2",
+      "xdc_name": "JD[7]",
+      "label": "Pmod JD pin 7"
+    },
+    {
+      "id": "JD8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G4",
+      "xdc_name": "JD[8]",
+      "label": "Pmod JD pin 8"
+    },
+    {
+      "id": "JD9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "G2",
+      "xdc_name": "JD[9]",
+      "label": "Pmod JD pin 9"
+    },
+    {
+      "id": "JD10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "F3",
+      "xdc_name": "JD[10]",
+      "label": "Pmod JD pin 10"
+    },
+    {
+      "id": "TMP_SCL",
+      "kind": "sensor",
+      "dir": "out",
+      "pin": "C14",
+      "xdc_name": "TMP_SCL",
+      "label": "ADT7420 temperature sensor I2C SCL"
+    },
+    {
+      "id": "TMP_SDA",
+      "kind": "sensor",
+      "dir": "io",
+      "pin": "C15",
+      "xdc_name": "TMP_SDA",
+      "label": "ADT7420 temperature sensor I2C SDA (open drain)"
+    },
+    {
+      "id": "TMP_INT",
+      "kind": "sensor",
+      "dir": "in",
+      "pin": "D13",
+      "xdc_name": "TMP_INT",
+      "label": "ADT7420 INT (open drain, idle high)"
+    },
+    {
+      "id": "TMP_CT",
+      "kind": "sensor",
+      "dir": "in",
+      "pin": "B14",
+      "xdc_name": "TMP_CT",
+      "label": "ADT7420 CT (open drain, idle high)"
+    },
+    {
+      "id": "ACL_SCLK",
+      "kind": "sensor",
+      "dir": "out",
+      "pin": "F15",
+      "xdc_name": "ACL_SCLK",
+      "label": "ADXL362 accelerometer SPI SCLK"
+    },
+    {
+      "id": "ACL_MOSI",
+      "kind": "sensor",
+      "dir": "out",
+      "pin": "F14",
+      "xdc_name": "ACL_MOSI",
+      "label": "ADXL362 accelerometer SPI MOSI"
+    },
+    {
+      "id": "ACL_CSN",
+      "kind": "sensor",
+      "dir": "out",
+      "pin": "D15",
+      "xdc_name": "ACL_CSN",
+      "label": "ADXL362 accelerometer SPI CS (active low)"
+    },
+    {
+      "id": "ACL_MISO",
+      "kind": "sensor",
+      "dir": "in",
+      "pin": "E15",
+      "xdc_name": "ACL_MISO",
+      "label": "ADXL362 accelerometer SPI MISO"
+    },
+    {
+      "id": "ACL_INT1",
+      "kind": "sensor",
+      "dir": "in",
+      "pin": "B13",
+      "xdc_name": "ACL_INT[1]",
+      "label": "ADXL362 INT1"
+    },
+    {
+      "id": "ACL_INT2",
+      "kind": "sensor",
+      "dir": "in",
+      "pin": "C16",
+      "xdc_name": "ACL_INT[2]",
+      "label": "ADXL362 INT2"
+    },
+    {
+      "id": "M_CLK",
+      "kind": "sensor",
+      "dir": "out",
+      "pin": "J5",
+      "xdc_name": "M_CLK",
+      "label": "PDM microphone clock"
+    },
+    {
+      "id": "M_DATA",
+      "kind": "sensor",
+      "dir": "in",
+      "pin": "H5",
+      "xdc_name": "M_DATA",
+      "label": "PDM microphone data"
+    },
+    {
+      "id": "M_LRSEL",
+      "kind": "sensor",
+      "dir": "out",
+      "pin": "F5",
+      "xdc_name": "M_LRSEL",
+      "label": "PDM microphone channel select"
+    },
+    {
+      "id": "JXADC1",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A13",
+      "xdc_name": "XA_P[1]",
+      "label": "Pmod JXADC pin 1"
+    },
+    {
+      "id": "JXADC2",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A15",
+      "xdc_name": "XA_P[2]",
+      "label": "Pmod JXADC pin 2"
+    },
+    {
+      "id": "JXADC3",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "B16",
+      "xdc_name": "XA_P[3]",
+      "label": "Pmod JXADC pin 3"
+    },
+    {
+      "id": "JXADC4",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "B18",
+      "xdc_name": "XA_P[4]",
+      "label": "Pmod JXADC pin 4"
+    },
+    {
+      "id": "JXADC7",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A14",
+      "xdc_name": "XA_N[1]",
+      "label": "Pmod JXADC pin 7"
+    },
+    {
+      "id": "JXADC8",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A16",
+      "xdc_name": "XA_N[2]",
+      "label": "Pmod JXADC pin 8"
+    },
+    {
+      "id": "JXADC9",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "B17",
+      "xdc_name": "XA_N[3]",
+      "label": "Pmod JXADC pin 9"
+    },
+    {
+      "id": "JXADC10",
+      "kind": "pmod",
+      "dir": "io",
+      "pin": "A18",
+      "xdc_name": "XA_N[4]",
+      "label": "Pmod JXADC pin 10"
     }
   ],
   "unsupported_pins": {
-    "C17": "JA[1] (IO_L20N_T3_A19_15 Sch=ja[1])",
-    "D18": "JA[2] (IO_L21N_T3_DQS_A18_15 Sch=ja[2])",
-    "E18": "JA[3] (IO_L21P_T3_DQS_15 Sch=ja[3])",
-    "G17": "JA[4] (IO_L18N_T2_A23_15 Sch=ja[4])",
-    "D17": "JA[7] (IO_L16N_T2_A27_15 Sch=ja[7])",
-    "E17": "JA[8] (IO_L16P_T2_A28_15 Sch=ja[8])",
-    "F18": "JA[9] (IO_L22N_T3_A16_15 Sch=ja[9])",
-    "G18": "JA[10] (IO_L22P_T3_A17_15 Sch=ja[10])",
-    "D14": "JB[1] (IO_L1P_T0_AD0P_15 Sch=jb[1])",
-    "F16": "JB[2] (IO_L14N_T2_SRCC_15 Sch=jb[2])",
-    "G16": "JB[3] (IO_L13N_T2_MRCC_15 Sch=jb[3])",
-    "H14": "JB[4] (IO_L15P_T2_DQS_15 Sch=jb[4])",
-    "E16": "JB[7] (IO_L11N_T1_SRCC_15 Sch=jb[7])",
-    "F13": "JB[8] (IO_L5P_T0_AD9P_15 Sch=jb[8])",
-    "G13": "JB[9] (IO_0_15 Sch=jb[9])",
-    "H16": "JB[10] (IO_L13P_T2_MRCC_15 Sch=jb[10])",
-    "K1": "JC[1] (IO_L23N_T3_35 Sch=jc[1])",
-    "F6": "JC[2] (IO_L19N_T3_VREF_35 Sch=jc[2])",
-    "J2": "JC[3] (IO_L22N_T3_35 Sch=jc[3])",
-    "G6": "JC[4] (IO_L19P_T3_35 Sch=jc[4])",
-    "E7": "JC[7] (IO_L6P_T0_35 Sch=jc[7])",
-    "J3": "JC[8] (IO_L22P_T3_35 Sch=jc[8])",
-    "J4": "JC[9] (IO_L21P_T3_DQS_35 Sch=jc[9])",
-    "E6": "JC[10] (IO_L5P_T0_AD13P_35 Sch=jc[10])",
-    "H4": "JD[1] (IO_L21N_T3_DQS_35 Sch=jd[1])",
-    "H1": "JD[2] (IO_L17P_T2_35 Sch=jd[2])",
-    "G1": "JD[3] (IO_L17N_T2_35 Sch=jd[3])",
-    "G3": "JD[4] (IO_L20N_T3_35 Sch=jd[4])",
-    "H2": "JD[7] (IO_L15P_T2_DQS_35 Sch=jd[7])",
-    "G4": "JD[8] (IO_L20P_T3_35 Sch=jd[8])",
-    "G2": "JD[9] (IO_L15N_T2_DQS_35 Sch=jd[9])",
-    "F3": "JD[10] (IO_L13N_T2_MRCC_35 Sch=jd[10])",
-    "A14": "XA_N[1] (IO_L9N_T1_DQS_AD3N_15 Sch=xa_n[1])",
-    "A13": "XA_P[1] (IO_L9P_T1_DQS_AD3P_15 Sch=xa_p[1])",
-    "A16": "XA_N[2] (IO_L8N_T1_AD10N_15 Sch=xa_n[2])",
-    "A15": "XA_P[2] (IO_L8P_T1_AD10P_15 Sch=xa_p[2])",
-    "B17": "XA_N[3] (IO_L7N_T1_AD2N_15 Sch=xa_n[3])",
-    "B16": "XA_P[3] (IO_L7P_T1_AD2P_15 Sch=xa_p[3])",
-    "A18": "XA_N[4] (IO_L10N_T1_AD11N_15 Sch=xa_n[4])",
-    "B18": "XA_P[4] (IO_L10P_T1_AD11P_15 Sch=xa_p[4])",
-    "A3": "VGA_R[0] (IO_L8N_T1_AD14N_35 Sch=vga_r[0])",
-    "B4": "VGA_R[1] (IO_L7N_T1_AD6N_35 Sch=vga_r[1])",
-    "C5": "VGA_R[2] (IO_L1N_T0_AD4N_35 Sch=vga_r[2])",
-    "A4": "VGA_R[3] (IO_L8P_T1_AD14P_35 Sch=vga_r[3])",
-    "C6": "VGA_G[0] (IO_L1P_T0_AD4P_35 Sch=vga_g[0])",
-    "A5": "VGA_G[1] (IO_L3N_T0_DQS_AD5N_35 Sch=vga_g[1])",
-    "B6": "VGA_G[2] (IO_L2N_T0_AD12N_35 Sch=vga_g[2])",
-    "A6": "VGA_G[3] (IO_L3P_T0_DQS_AD5P_35 Sch=vga_g[3])",
-    "B7": "VGA_B[0] (IO_L2P_T0_AD12P_35 Sch=vga_b[0])",
-    "C7": "VGA_B[1] (IO_L4N_T0_35 Sch=vga_b[1])",
-    "D7": "VGA_B[2] (IO_L6N_T0_VREF_35 Sch=vga_b[2])",
-    "D8": "VGA_B[3] (IO_L4P_T0_35 Sch=vga_b[3])",
-    "B11": "VGA_HS (IO_L4P_T0_15 Sch=vga_hs)",
-    "B12": "VGA_VS (IO_L3N_T0_DQS_AD1N_15 Sch=vga_vs)",
     "E2": "SD_RESET (IO_L14P_T2_SRCC_35 Sch=sd_reset)",
     "A1": "SD_CD (IO_L9N_T1_DQS_AD7N_35 Sch=sd_cd)",
     "B1": "SD_SCK (IO_L9P_T1_DQS_AD7P_35 Sch=sd_sck)",
@@ -591,23 +1089,8 @@
     "E1": "SD_DAT[1] (IO_L18N_T2_35 Sch=sd_dat[1])",
     "F1": "SD_DAT[2] (IO_L18P_T2_35 Sch=sd_dat[2])",
     "D2": "SD_DAT[3] (IO_L14N_T2_SRCC_35 Sch=sd_dat[3])",
-    "E15": "ACL_MISO (IO_L11P_T1_SRCC_15 Sch=acl_miso)",
-    "F14": "ACL_MOSI (IO_L5N_T0_AD9N_15 Sch=acl_mosi)",
-    "F15": "ACL_SCLK (IO_L14P_T2_SRCC_15 Sch=acl_sclk)",
-    "D15": "ACL_CSN (IO_L12P_T1_MRCC_15 Sch=acl_csn)",
-    "B13": "ACL_INT[1] (IO_L2P_T0_AD8P_15 Sch=acl_int[1])",
-    "C16": "ACL_INT[2] (IO_L20P_T3_A20_15 Sch=acl_int[2])",
-    "C14": "TMP_SCL (IO_L1N_T0_AD0N_15 Sch=tmp_scl)",
-    "C15": "TMP_SDA (IO_L12N_T1_MRCC_15 Sch=tmp_sda)",
-    "D13": "TMP_INT (IO_L6N_T0_VREF_15 Sch=tmp_int)",
-    "B14": "TMP_CT (IO_L2N_T0_AD8N_15 Sch=tmp_ct)",
-    "J5": "M_CLK (IO_25_35 Sch=m_clk)",
-    "H5": "M_DATA (IO_L24N_T3_35 Sch=m_data)",
-    "F5": "M_LRSEL (IO_0_35 Sch=m_lrsel)",
     "A11": "AUD_PWM (IO_L4N_T0_15 Sch=aud_pwm)",
     "D12": "AUD_SD (IO_L6P_T0_15 Sch=aud_sd)",
-    "C4": "UART_TXD_IN (IO_L7P_T1_AD6P_35 Sch=uart_txd_in)",
-    "D4": "UART_RXD_OUT (IO_L11N_T1_SRCC_35 Sch=uart_rxd_out)",
     "D3": "UART_CTS (IO_L12N_T1_MRCC_35 Sch=uart_cts)",
     "E5": "UART_RTS (IO_L5N_T0_AD13N_35 Sch=uart_rts)",
     "F4": "PS2_CLK (IO_L13P_T2_MRCC_35 Sch=ps2_clk)",

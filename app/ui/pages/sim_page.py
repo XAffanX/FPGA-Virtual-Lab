@@ -98,6 +98,13 @@ class SimulationPage(QWidget):
         self.min_press.setSuffix(" cycles")
         self.min_press.setValue(win.settings.get("min_press_cycles"))
         self.min_press.valueChanged.connect(win.set_min_press)
+        self.timing = QCheckBox("Timing simulation (Vivado's real delays)")
+        self.timing.setChecked(bool(win.settings.get("timing_sim")))
+        self.timing.setToolTip("Simulate the netlist with Vivado's SDF gate and wire delays: designs that fail "
+                               "timing at 100 MHz then misbehave as on the board. Slower. Applies on the next "
+                               "Program.")
+        self.timing.toggled.connect(win.set_timing)
+        of.addRow(self.timing)
         of.addRow(self.record)
         of.addRow("Minimum button press", self.min_press)
 

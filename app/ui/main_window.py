@@ -13,6 +13,7 @@ from app import APP_NAME, AUTHOR, AUTHOR_URL, __version__
 from app.board.board import available_boards, get_board
 from app.hardware.virtual_board import HwState, VirtualBoard
 from app.ui import theme
+from app.ui.pages.devices_page import DevicesPage
 from app.ui.pages.settings_page import SettingsPage
 from app.ui.pages.sim_page import SimulationPage, fmt_sim_time
 from app.ui.status_panel import ConnectVivadoDialog, StatusPanel, board_page
@@ -24,7 +25,7 @@ from app.widgets.board_view import BoardWidget
 from app.widgets.console import Console
 from app.widgets.waveform_view import WaveformViewer
 
-PAGES = [("board", "▦   FPGA Board"), ("sim", "▶   Simulation"), ("waves", "∿   Waveforms"),
+PAGES = [("board", "▦   FPGA Board"), ("devices", "▣   Devices"), ("sim", "▶   Simulation"), ("waves", "∿   Waveforms"),
          ("console", "▤   Console"), ("settings", "⚙   Settings")]
 STATE_COLOR = {HwState.POWER_OFF: theme.MUTED, HwState.UNPROGRAMMED: theme.WARN, HwState.PROGRAMMING: theme.ACCENT,
                HwState.PROGRAMMED: theme.ACCENT, HwState.RUNNING: theme.OK, HwState.PAUSED: theme.WARN}
@@ -102,10 +103,12 @@ class MainWindow(QMainWindow):
         self.panel = StatusPanel()
         self.panel.set_board(self.board)
         self.sim_page = SimulationPage(self)
+        self.devices = DevicesPage(self)
+        self.devices.set_board(self.board)
         self.waves = WaveformViewer()
         self.console_page = Console()
         self.settings_page = SettingsPage(self)
-        self.pages = {"board": board_page(self.board_widget, self.panel), "sim": self.sim_page,
+        self.pages = {"board": board_page(self.board_widget, self.panel), "devices": self.devices, "sim": self.sim_page,
                       "waves": self.waves, "console": self.console_page, "settings": self.settings_page}
         self.stack = QStackedWidget()
         for key, _ in PAGES:
@@ -256,6 +259,7 @@ class MainWindow(QMainWindow):
         self.settings.set("board", board.id)
         self.board_widget.set_board(board)
         self.panel.set_board(board)
+        self.devices.set_board(board)
         self.sim_page.set_design(None)
         self.waves.attach(None)
         self.board_combo.blockSignals(True)
@@ -340,6 +344,14 @@ class MainWindow(QMainWindow):
         self.settings.set("min_press_cycles", int(cycles))
         self.vb.sim.request_min_press.emit(int(cycles))
 
+    def set_timing(self, on: bool):
+        self.settings.set("timing_sim", bool(on))
+        self.log("info", f"Timing simulation {'ON' if on else 'OFF'}: takes effect the next time you program the "
+                         "virtual FPGA" + (" (re-programming now)." if self.vb.configured else "."))
+        if self.vb.configured and self.vb.programmed_bit is not None:
+            self.vb.program(self.vb.programmed_bit.path)
+        self.refresh_status()
+
     def set_recording(self, on: bool):
         self.settings.set("record_waveforms", bool(on))
         self.vb.sim.request_recording.emit(bool(on))
@@ -385,9 +397,18 @@ class MainWindow(QMainWindow):
                 mapped.setdefault(rid, []).append(key)
             self.board_widget.set_mapping({rid: ", ".join(k) for rid, k in mapped.items()})
             self.sim_page.set_design(info, design, self.board)
+            if info.get("peripherals"):
+                self.log("info", "Board devices used by this design: " + ", ".join(info["peripherals"]) +
+                         " (see the Devices page).")
+            if info.get("vga") and self.settings.get("speed") in ("slow", "normal"):
+                # a VGA frame is 1.68 M clock cycles: at 1 k cycles/s nothing would appear for many minutes
+                self.set_speed("max")
+                self.log("info", "VGA design: speed set to Maximum so the picture can build up.")
         else:
             self.board_widget.set_mapping({})
             self.sim_page.set_design(None)
+        self.devices.set_design(info if design is not None else None)
+        self.refresh_status()
 
     def _on_update(self, u):
         if self.vb.state not in HwState.ACTIVE:
@@ -403,6 +424,7 @@ class MainWindow(QMainWindow):
             self.sim_page.show_update(u)
         else:
             self.sim_page.remember(u)
+        self.devices.show_update(u)
         now = time.monotonic()
         if now - self._vcd_check > 1.0 and self.settings.get("record_waveforms") and self.waves.reader:
             self._vcd_check = now
@@ -437,6 +459,12 @@ class MainWindow(QMainWindow):
         if st not in HwState.ACTIVE:
             for k in ("cycles", "time", "rate"):
                 p.set(k, "-")
+        tim, wns = vb.timing_info if st in HwState.ACTIVE else (bool(self.settings.get("timing_sim")), None)
+        if tim:
+            slack = "" if wns is None else (f" · FAILS (WNS {wns:.2f} ns)" if wns < 0 else f" · meets (WNS {wns:.2f} ns)")
+            p.set("timing", "Vivado delays (SDF)" + slack, theme.ERR if wns is not None and wns < 0 else theme.OK)
+        else:
+            p.set("timing", "Functional (no delays)", theme.MUTED, tip="Enable timing simulation on the Simulation page")
         hs, hm = vb.hw_server, self._xvc_status
         if vb.xvc is None:
             p.set("hm", "Not connected", theme.MUTED, tip="Click Connect to Vivado")

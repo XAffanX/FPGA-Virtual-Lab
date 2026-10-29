@@ -37,14 +37,16 @@ class Signal:
         i = bisect.bisect_right(self.times, t_fs) - 1
         return self.values[i] if i >= 0 else OFF
 
-    def append(self, t: int, v: str | None) -> None:
+    def append(self, t: int, v: str | None) -> bool:
+        """Record a change; True if a new entry was stored."""
         if self.times and self.times[-1] == t:
             self.values[-1] = v
-            return
+            return False
         if self.values and self.values[-1] == v:
-            return
+            return False
         self.times.append(t)
         self.values.append(v)
+        return True
 
 
 def format_value(v: str | None, width: int, radix: str = "hex") -> str:
@@ -76,9 +78,17 @@ def format_value(v: str | None, width: int, radix: str = "hex") -> str:
     return f"{n:0{max(1, (width + 3) // 4)}x}"
 
 
+# Value changes kept in memory for display (~100 bytes each in Python). A design that toggles many
+# signals every clock (e.g. VGA) would otherwise grow by tens of MB per second.
+MAX_CHANGES = 4_000_000
+
+
 class VcdReader:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, max_changes: int = MAX_CHANGES):
         self.path = Path(path)
+        self.max_changes = max_changes
+        self.changes = 0
+        self.truncated = False                          # display limit reached: later data not loaded
         self.signals: dict[str, list[Signal]] = {}     # code -> signals sharing it
         self.by_name: dict[str, Signal] = {}
         self.timescale_fs = 1000                        # default 1 ps
@@ -100,7 +110,7 @@ class VcdReader:
             return False
         if size < self._offset:          # file was recreated (simulator restarted)
             self.__init__(self.path)
-        if size == self._offset:
+        if size == self._offset or self.truncated:
             return False
         with open(self.path, "r", encoding="utf-8", errors="replace") as f:
             f.seek(self._offset)
@@ -183,13 +193,17 @@ class VcdReader:
             if value is not OFF and s.width > 1 and len(value) < s.width:
                 pad = value[0] if value[0] in "xXzZ" else "0"
                 value = value.rjust(s.width, pad)
-            s.append(self.time, value)
+            if s.append(self.time, value):
+                self.changes += 1
 
     def _parse_line(self, line: str) -> None:
-        if not line:
+        if not line or self.truncated:
             return
         c = line[0]
         if c == "#":
+            if self.changes >= self.max_changes:
+                self.truncated = True
+                return
             try:
                 self.time = int(line[1:]) * self.timescale_fs
             except ValueError:

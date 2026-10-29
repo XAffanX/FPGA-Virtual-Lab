@@ -1,17 +1,17 @@
-# FPGA Virtual Lab 1.1
+# FPGA Virtual Lab 1.2
 
 Virtual Digilent boards that work alongside **AMD Vivado**. You write, implement and generate the
 bitstream in Vivado; FPGA Virtual Lab provides a board to program it into.
 
 | Virtual board | Real board | FPGA | Simulated parts |
 |---|---|---|---|
-| `virtual_basys3` | Digilent Basys 3 | XC7A35T-1CPG236C | 16 switches, 16 LEDs, 5 buttons, 4-digit display |
-| `virtual_nexys4ddr` | Digilent Nexys 4 DDR | XC7A100T-1CSG324C | 16 switches, 16 LEDs, 2 tri-colour LEDs, 5 buttons + CPU RESET (active low), 8-digit display |
+| `virtual_basys3` | Digilent Basys 3 | XC7A35T-1CPG236C | 16 switches, 16 LEDs, 5 buttons, 4-digit display, USB-UART, VGA, Pmods JA/JB/JC/JXADC |
+| `virtual_nexys4ddr` | Digilent Nexys 4 DDR | XC7A100T-1CSG324C | 16 switches, 16 LEDs, 2 tri-colour LEDs, 5 buttons + CPU RESET (active low), 8-digit display, USB-UART, VGA, Pmods JA–JD/JXADC, temperature sensor, accelerometer, microphone |
 
 Both boards also have a 100 MHz clock, a power switch and LED, a PROG button and a DONE LED.
 Pins come from Digilent's master XDC files; the Nexys file is included under `configurations/xdc/`.
-Pins of peripherals that aren't simulated (Pmods, VGA, audio, sensors, DDR2, Ethernet) are
-recognised and reported as not simulated.
+Pins of peripherals that aren't simulated (DDR2, Ethernet, audio out, microSD, PS/2, XADC analog
+inputs) are recognised and reported as not simulated.
 
 ## Workflow
 
@@ -27,6 +27,32 @@ recognised and reported as not simulated.
      straight away. Click **Copy Tcl** and paste it into Vivado.
 4. Flip switches and press buttons, and watch the LEDs and display. Use Run/Pause/Step, Reset, and
    **Power OFF** when you're done.
+
+## Board devices (Devices page)
+
+Each device is simulated only when your design uses its pins. The pins come from Digilent's master XDC.
+
+| Device | What you can do |
+|---|---|
+| **USB-UART terminal** | See what the design sends, and type text to send it, at any baud rate (8N1). Includes hex view and line-ending choice. Basys 3: `RsRx`/`RsTx`; Nexys: `UART_TXD_IN`/`UART_RXD_OUT`. |
+| **VGA screen** | 640×480 picture from the 12 colour pins and the sync signals. Sync polarity and pixel rate are detected like a monitor. The picture builds up line by line at simulation speed. |
+| **Pmod headers** | Every Pmod pin (JA–JD, JXADC) is a board pin: outputs light up, and inputs are buttons you toggle. |
+| **Nexys sensors** | ADT7420 temperature (I2C, slider), ADXL362 accelerometer (SPI, X/Y/Z or presets, data only in measurement mode like the real part), PDM microphone (a test tone with level and frequency). |
+
+A ready-made VGA test (colour bars and a square moved by the switches) is in
+`bitstreams/vga_test_basys3/`: load `vga_test.bit` on `virtual_basys3`.
+
+## Timing simulation
+
+Turn on **Simulation ▸ Timing simulation (Vivado's real delays)** and reprogram the board.
+
+1. Vivado's timing netlist and SDF are exported along with the normal netlist (one export, cached).
+2. The app writes every cell and wire delay (slow corner) into the netlist and simulates that.
+
+While running continuously, a path longer than the 10 ns clock captures stale data, so a design
+that fails timing misbehaves as it would on the board. The status panel shows Vivado's worst
+slack (WNS) and says *FAILS* when it is negative. When you pause or single-step, the clock stops
+and outputs settle, so a timing failure disappears, as with a slow manual clock on real hardware.
 
 ## How a `.bit` is run
 
@@ -87,12 +113,13 @@ there would need an administrator-only hosts-file entry, so the app doesn't chan
 py -3.12 -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
 .venv\Scripts\python main.py
-.venv\Scripts\python -m pytest                                   # 84 tests, needs Vivado for most
+.venv\Scripts\python -m pytest                                   # 101 tests, needs Vivado for most
 powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1  # dist\FPGAVirtualLab\ + zip
 ```
 
 The test fixtures in `tests/fixtures` are real Vivado 2026.1 bitstreams with their routed
-checkpoints: two for the Basys 3 and one for the Nexys 4 DDR. The tests that use Vivado start
+checkpoints: six for the Basys 3 (counters, UART echo, VGA, Pmod, a design that fails timing)
+and two for the Nexys 4 DDR (counter, on-board sensors). Their sources are in `tests/fixtures/designs`. The tests that use Vivado start
 their own private `hw_server`, so they never touch an open Vivado session.
 
 ## Layout

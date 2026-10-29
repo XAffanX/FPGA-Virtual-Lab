@@ -59,7 +59,11 @@ class BoardUpdate:
     ports: list = field(default_factory=list)         # (name, dir, value, xmask, width)
     rate: float = 0.0                                 # achieved cycles per wall second
     mapped_outputs: set = field(default_factory=set)
-    extra: dict = field(default_factory=dict)         # other outputs (RGB LED channels): id -> 0..1 / None
+    extra: dict = field(default_factory=dict)         # other outputs (RGB channels, Pmod pins): id -> 0..1 / None
+    uart_rx: bytes = b""                              # bytes the design sent on the USB-UART since last update
+    vga: bytes | None = None                          # 640x480 RGB888 frame when it changed
+    vga_text: str = ""
+    inputs: dict = field(default_factory=dict)        # current logic level of board input pins (Pmod inputs)
 
 
 class SimWorker(QObject):
@@ -84,6 +88,8 @@ class SimWorker(QObject):
         self._pending_release: set[str] = set()
         self._rate_hist: list[tuple[float, int]] = []
         self._last_emit = 0.0
+        self._uart_pending = b""
+        self._vga_emit = 0.0
 
     # ------------------------------------------------------------ helpers
     def _ensure_timer(self):
@@ -141,12 +147,24 @@ class SimWorker(QObject):
         else:
             u.leds = [None if lv is None else float(lv) for lv in u.led_levels]   # paused: exact level
         u.digits = sim.seven_segment()
-        for r in sim.board.of_kind("rgb"):
+        for r in sim.board.of_kind("rgb", "pmod", "uart_tx", "sensor"):
+            if r.id not in sim.io.output_bits:
+                continue
             if self.running:
                 u.extra[r.id] = sim.brightness(r.id)
             else:
                 lv = sim.level(r.id)
                 u.extra[r.id] = None if lv is None else float(lv)
+        u.inputs = dict(sim.io.input_state)
+        rx = sim.periph.take_uart()
+        self._uart_pending += bytes(rx)
+        u.uart_rx, self._uart_pending = bytes(self._uart_pending), b""
+        vs = sim.periph.vga_state
+        if sim.periph.has_vga and (vs.changed and now - self._vga_emit > 0.25 or force):
+            vs.changed = False
+            self._vga_emit = now
+            u.vga = bytes(vs.frame)
+        u.vga_text = vs.timing_text if sim.periph.has_vga else ""
         widths = {p.name: p.width for p in sim.compiled.ports}
         u.ports = [(n, d, v, x, widths[n]) for n, d, v, x in sim.port_values()]
         u.mapped_outputs = set(sim.io.output_bits)
@@ -240,6 +258,7 @@ class SimWorker(QObject):
         self.running = False
         self._timer.stop()
         self._release_pending(force=True)
+        self._guard(self.sim.settle_outputs)
         self._emit(force=True)
         self.state_changed.emit(SimState.PAUSED)
 
@@ -253,13 +272,45 @@ class SimWorker(QObject):
             self._emit(force=True)
             self.state_changed.emit(SimState.PAUSED)
 
+    @Slot(bytes)
+    def uart_send(self, data: bytes):
+        if self.sim is None or not self.sim.alive:
+            self.log.emit("warning", "UART: the virtual FPGA is not programmed.")
+            return
+        try:
+            self.sim.uart_send(bytes(data))
+        except SimulationError as exc:
+            self.log.emit("warning", f"UART: {exc}")
+            return
+        if not self.running:
+            self.log.emit("info", f"UART: {len(data)} byte(s) queued; they are shifted into the design "
+                                  "while the clock runs (press Run).")
+
+    @Slot(str, object)
+    def set_periph(self, what: str, value):
+        if self.sim is None or not self.sim.alive:
+            return
+        fn = {"baud": lambda v: self.sim.set_uart_baud(int(v)),
+              "temp": lambda v: self.sim.set_temperature(float(v)),
+              "accel": lambda v: self.sim.set_accel(*[int(x) for x in v]),
+              "mic": lambda v: self.sim.set_mic(int(v[0]), int(v[1]))}.get(what)
+        if fn is not None:
+            self._guard(fn, value)
+
     def _design_info(self) -> dict:
         sim = self.sim
         return {"top": sim.compiled.top,
                 "ports": [(p.name, p.direction, p.width) for p in sim.compiled.ports],
                 "reset_candidates": sim.reset_candidates(),
                 "reset_port": sim.reset_port_name,
-                "reset": sim.options.reset}
+                "reset": sim.options.reset,
+                "peripherals": sim.periph.summary(),
+                "uart": sim.periph.has_uart, "uart_rx": bool(sim.periph.uart_rx), "vga": sim.periph.has_vga,
+                "sensors": {"temp": sim.periph.tmp, "acl": sim.periph.acl, "mic": sim.periph.mic},
+                "pmods": sorted(rid for rid in list(sim.io.output_bits) + list(sim.resolved.inputs)
+                                if sim.board.resources[rid].kind == "pmod"),
+                "pmod_inputs": sorted(rid for rid in sim.resolved.inputs if sim.board.resources[rid].kind == "pmod"),
+                "timing": sim.options.timing}
 
     @Slot()
     def reset(self):
@@ -395,6 +446,8 @@ class SimController(QObject):
     request_reset = Signal()
     request_pulse_reset = Signal()
     request_configure_reset = Signal(object)
+    request_uart_send = Signal(bytes)
+    request_periph = Signal(str, object)      # ("baud", 115200) / ("temp", 23.5) / ("accel", (x,y,z)) / ("mic", (a,f))
     request_stop = Signal()
     request_speed = Signal(str, int)
     request_min_press = Signal(int)
@@ -414,6 +467,8 @@ class SimController(QObject):
         self.request_reset.connect(self.worker.reset)
         self.request_pulse_reset.connect(self.worker.pulse_reset_port)
         self.request_configure_reset.connect(self.worker.configure_reset)
+        self.request_uart_send.connect(self.worker.uart_send)
+        self.request_periph.connect(self.worker.set_periph)
         self.request_stop.connect(self.worker.stop_sim)
         self.request_speed.connect(self.worker.set_speed)
         self.request_min_press.connect(self.worker.set_min_press)

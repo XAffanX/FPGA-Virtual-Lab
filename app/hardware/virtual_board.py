@@ -280,10 +280,11 @@ class VirtualBoard(QObject):
         self._set_state(HwState.PROGRAMMING)
         self.log.emit("cmd", f"Programming virtual FPGA with {info.path.name} (requested by {source})...")
         viv = self.vivado
+        timing = bool(self.settings.get("timing_sim"))
         workdir = user_data_dir() / "build" / "bitstream"
 
         def work(progress):
-            design = load_bitstream(info.path, viv, checkpoint, log=progress)
+            design = load_bitstream(info.path, viv, checkpoint, log=progress, timing=timing)
             res = compile_design(tc, [design.netlist], design.top, workdir / "compile",
                                  extra_args=design.compile_args(), extra_roots=design.extra_roots)
             return design, res
@@ -307,8 +308,13 @@ class VirtualBoard(QObject):
             self.design = design
             self._pending_bit = info
             rc = self.reset_config(design.top)
-            opts = EngineOptions(power_on_init=False, waveforms=True,
-                                 record=bool(self.settings.get("record_waveforms")), reset=rc)
+            st = self.settings
+            opts = EngineOptions(power_on_init=False, waveforms=True, record=bool(st.get("record_waveforms")),
+                                 reset=rc, timing=design.timing, uart_baud=int(st.get("uart_baud")),
+                                 temperature_c=float(st.get("temperature_c")),
+                                 accel_mg=(int(st.get("accel_x")), int(st.get("accel_y")), int(st.get("accel_z"))),
+                                 mic=(int(st.get("mic_amp")), int(st.get("mic_freq"))))
+            self.timing_info = (design.timing, design.wns_ns)
             self.sim.request_program.emit(ProgramRequest(tc, self.board, res, mapping, workdir / "sim", opts,
                                                          dict(self._inputs_fn())))
 
@@ -405,6 +411,27 @@ class VirtualBoard(QObject):
     def hardware_reset(self):
         if self._require_configured("Hardware reset"):
             self.sim.request_pulse_reset.emit()
+
+    # ---- board peripherals (USB-UART, sensors)
+    def uart_send(self, data: bytes):
+        if self._require_configured("UART"):
+            self.sim.request_uart_send.emit(bytes(data))
+
+    def set_peripheral(self, what: str, value):
+        """what: 'baud' | 'temp' | 'accel' (x,y,z mg) | 'mic' (amplitude 0..1000, Hz). Remembered in settings."""
+        st = self.settings
+        if what == "baud":
+            st.set("uart_baud", int(value))
+        elif what == "temp":
+            st.set("temperature_c", float(value))
+        elif what == "accel":
+            for k, v in zip(("accel_x", "accel_y", "accel_z"), value):
+                st.set(k, int(v))
+        elif what == "mic":
+            st.set("mic_amp", int(value[0]))
+            st.set("mic_freq", int(value[1]))
+        if self.configured:
+            self.sim.request_periph.emit(what, value)
 
     def set_input(self, rid: str, level: int):
         if self.configured:
@@ -596,6 +623,7 @@ class VirtualBoard(QObject):
         return None
 
     _xvc_match: Path | None = None
+    timing_info: tuple = (False, None)       # (timing simulation on, worst slack ns) of the programmed design
 
     def _on_xvc_jprogram(self):
         self.clear_configuration("Vivado Hardware Manager (JPROGRAM)")
