@@ -333,8 +333,11 @@ class WaveformViewer(QWidget):
             size = self.reader.path.stat().st_size
         except OSError:
             size = 0
-        self.info.setText(f"{len(self.reader.by_name)} signals · recorded to {fmt_time(self.canvas.end_time)} · "
-                          f"VCD {size / 1e6:.1f} MB")
+        text = (f"{len(self.reader.by_name)} signals · recorded to {fmt_time(self.canvas.end_time)} · "
+                f"VCD {size / 1e6:.1f} MB")
+        if self.reader.truncated:
+            text += " · display limit reached: later changes are in the file but not shown"
+        self.info.setText(text)
         self.canvas.update()
 
     def _build_tree(self):

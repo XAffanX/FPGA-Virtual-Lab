@@ -21,6 +21,11 @@ DEFAULTS = {
     "record_waveforms": True,
     "last_bitstream": "",
     "speed": "normal",
+    "timing_sim": False,         # simulate with Vivado's SDF delays (timing netlist)
+    "uart_baud": 9600,
+    "temperature_c": 25.0,
+    "accel_x": 0, "accel_y": 0, "accel_z": 1000,
+    "mic_amp": 0, "mic_freq": 1000,
 }
 
 
@@ -37,6 +42,11 @@ class AppSettings:
         if isinstance(default, int):
             try:
                 return int(v)
+            except (TypeError, ValueError):
+                return default
+        if isinstance(default, float):
+            try:
+                return float(v)
             except (TypeError, ValueError):
                 return default
         if isinstance(default, list):

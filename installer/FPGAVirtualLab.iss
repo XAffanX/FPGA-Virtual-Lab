@@ -1,7 +1,7 @@
 ; Inno Setup script for FPGA Virtual Lab (compiled by scripts\build_windows.ps1 when Inno Setup 6 is installed:
 ;   winget install JRSoftware.InnoSetup )
 #define AppName "FPGA Virtual Lab"
-#define AppVersion "1.1.0"
+#define AppVersion "1.2.0"
 #define Author "XAffanX"
 #define AuthorURL "https://github.com/XAffanX"
 #define RepoURL "https://github.com/XAffanX/FPGA-Virtual-Lab"

@@ -27,6 +27,11 @@ class EngineOptions:
     language: str = "auto"
     max_events_per_chunk: int = 20_000
     reset: ResetConfig | None = None
+    timing: bool = False               # netlist carries real (SDF) delays: sample at end of cycle
+    uart_baud: int = 9600
+    temperature_c: float = 25.0
+    accel_mg: tuple = (0, 0, 1000)     # board lying flat: +1 g on Z
+    mic: tuple = (0, 1000)             # (amplitude 0..1000, tone frequency Hz)
 
 
 class BoardSimulator:
@@ -42,12 +47,15 @@ class BoardSimulator:
             raise SimulationError("the pin mapping has errors: " +
                                   "; ".join(i.message for i in self.resolved.errors[:5]))
         self.io = BoardIO(board, self.resolved)
+        from .peripherals import Peripherals
+        self.periph = Peripherals(board, self.resolved)
         self.session = SimulationSession(
             toolchain, compiled.sources, compiled.top, compiled.ports, workdir,
             clock_masks=self.io.clock_masks(), language=self.options.language,
             power_on_init=self.options.power_on_init, waveforms=self.options.waveforms,
             record_initially=self.options.record,
-            extra_args=compiled.extra_args, extra_roots=compiled.extra_roots)
+            extra_args=compiled.extra_args, extra_roots=compiled.extra_roots,
+            extras=self.periph.extras(), timing=self.options.timing)
         self.persistence = PersistenceModel(self.session.out_width)
         self.has_clock = bool(self.resolved.clock_bits)
         self._reset_port: int | None = None
@@ -110,7 +118,15 @@ class BoardSimulator:
         self.session.build()
         self.session.inputs = dict(self.io.port_values())
         snap = self.session.start()
+        snap = self._configure_peripherals() or snap
         self.persistence.reset(snap.time_ps, snap.out_value, snap.out_xmask)
+        return snap
+
+    def _configure_peripherals(self) -> Snapshot | None:
+        o = self.options
+        snap = None
+        for reg, val in self.periph.initial_writes(o.uart_baud, o.temperature_c, tuple(o.accel_mg), tuple(o.mic)):
+            snap = self.session.periph_write(reg, val)
         return snap
 
     @property
@@ -125,6 +141,8 @@ class BoardSimulator:
         time return to 0, registers to their INIT values. Current switch positions are kept."""
         self.session.inputs = dict(self.io.port_values())
         snap = self.session.restart()
+        snap = self._configure_peripherals() or snap
+        self.periph.take_uart()
         self.persistence.reset(snap.time_ps, snap.out_value, snap.out_xmask)
         return snap
 
@@ -175,10 +193,48 @@ class BoardSimulator:
         rr = self.session.run(cycles, max_events)
         self.persistence.add_run(rr.start.time_ps, rr.events, rr.end.time_ps, rr.end.out_value,
                                  rr.end.out_xmask)
+        self.periph.handle(self.session.take_periph_lines())
         return rr
 
+    # ---------------------------------------------------------------- peripherals
+    def uart_send(self, data: bytes) -> None:
+        """Queue bytes for the design's UART RX pin (they are shifted in while the clock runs)."""
+        if not self.periph.uart_rx:
+            raise SimulationError("the design has no UART RX input (RsRx / UART_TXD_IN) on the USB-UART pin")
+        for b in data:
+            self.session.periph_write(1, b)
+
+    def set_uart_baud(self, baud: int) -> None:
+        if not 300 <= baud <= 12_500_000:
+            raise SimulationError(f"unsupported baud rate {baud}")
+        self.options.uart_baud = baud
+        self.session.periph_write(0, max(2, round(100_000_000 / baud)))
+
+    def set_temperature(self, celsius: float) -> None:
+        from .peripherals import temp_register
+        self.options.temperature_c = celsius
+        self.session.periph_write(2, temp_register(celsius))
+
+    def set_accel(self, x_mg: int, y_mg: int, z_mg: int) -> None:
+        self.options.accel_mg = (x_mg, y_mg, z_mg)
+        for i, v in enumerate((x_mg, y_mg, z_mg)):
+            self.session.periph_write(3 + i, int(v) & 0xFFFFFFFF)
+
+    def set_mic(self, amplitude: int, freq_hz: int) -> None:
+        self.options.mic = (amplitude, freq_hz)
+        self.session.periph_write(6, max(0, min(1000, int(amplitude))))
+        self.session.periph_write(7, max(1, int(freq_hz)))
+
     def step(self, cycles: int = 1) -> RunResult:
-        return self.run(cycles)
+        """Advance `cycles` clock cycles, then stop the clock (outputs settle in timing simulation)."""
+        rr = self.run(cycles)
+        self.settle_outputs()
+        return rr
+
+    def settle_outputs(self) -> None:
+        """Clock stopped: with real delays the outputs need ~10-20 ns to reach their final value."""
+        if self.options.timing and self.session.alive:
+            self._apply(self.session.settle())
 
     def set_recording(self, on: bool) -> None:
         self.session.set_recording(on)

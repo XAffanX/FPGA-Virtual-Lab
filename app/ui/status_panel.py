@@ -53,7 +53,7 @@ def vivado_tcl(board, *, host_port: int | None, xvc_port: int, bitstream: Path |
 class StatusPanel(QFrame):
     ROWS = [("board", "Board"), ("fpga", "FPGA"), ("power", "Power"), ("config", "Configuration"),
             ("bitstream", "Bitstream"), ("sim", "Simulation"), ("cycles", "Clock cycles"),
-            ("time", "Simulated time"), ("rate", "Speed"), ("hm", "Vivado")]
+            ("time", "Simulated time"), ("rate", "Speed"), ("timing", "Timing"), ("hm", "Vivado")]
 
     def __init__(self, parent=None):
         super().__init__(parent)

@@ -28,8 +28,9 @@ from app.compiler.compiler import (CompileResult, Diagnostic, Port, common_args,
 from app.utils.paths import native_dir
 from app.utils.toolchain import CREATE_NO_WINDOW, Toolchain
 
-from .harness import (OP_DUMP, OP_QUERY, OP_QUIT, OP_RUN, OP_SET, PROTOCOL_PREFIX, OutputLayout,
-                      generate_harness, output_layout)
+from .harness import (OP_DUMP, OP_PERIPH, OP_QUERY, OP_QUIT, OP_RUN, OP_SET, OP_SETTLE, PROTOCOL_PREFIX,
+                      HarnessExtras,
+                      OutputLayout, generate_harness, output_layout)
 
 INIT_VPI = "fvl_init"
 MAX_CYCLES_PER_COMMAND = 2**31 - 1
@@ -87,7 +88,8 @@ class SimulationSession:
                  language: str = "auto", include_dirs: list[Path] | None = None,
                  defines: dict[str, str] | None = None, power_on_init: bool = True,
                  waveforms: bool = True, record_initially: bool = False,
-                 extra_args: list[str] | None = None, extra_roots: list[str] | None = None):
+                 extra_args: list[str] | None = None, extra_roots: list[str] | None = None,
+                 extras: HarnessExtras | None = None, timing: bool = False):
         self.toolchain = toolchain
         self.sources = [Path(s) for s in sources]
         self.top = top
@@ -118,6 +120,9 @@ class SimulationSession:
         self._abort = threading.Event()
         self.design_output: list[str] = []     # lines printed by the design ($display ...)
         self.sim_info: list[str] = []          # simulator status lines (VCD info, power-on init)
+        self.periph_lines: list[str] = []      # "@@FVL <letter> ..." lines from peripheral models
+        self.extras = extras
+        self.timing = timing
         self.exit_message = ""
         self.snapshot: Snapshot | None = None
         self.inputs: dict[int, int] = {}       # last value written to each input port
@@ -142,7 +147,8 @@ class SimulationSession:
                                    vcd_path=self.vcd_path if self.waveforms else None,
                                    power_on_init=self.init_module is not None,
                                    record_initially=self.recording,
-                                   startup_ns=0.2 if self.extra_roots else 0.001)
+                                   startup_ns=20.0 if self.timing else (0.2 if self.extra_roots else 0.001),
+                                   extras=self.extras, timing=self.timing)
         self.harness_path.write_text(harness, encoding="utf-8")
         if self.vvp_path.exists():
             self.vvp_path.unlink()
@@ -287,9 +293,12 @@ class SimulationSession:
                 v, x = parse_hex(parts[4], self.out_width)
                 snap = Snapshot(int(parts[2]), int(parts[3]), v, x, parts[5] == "1")
                 return snap, events, snap.overflow
-            if len(parts) >= 4 and parts[1] == "E" and events is not None:
-                v, x = parse_hex(parts[3], self.out_width)
-                events.append((int(parts[2]), v, x))
+            if len(parts) >= 4 and parts[1] == "E":
+                if events is not None:
+                    v, x = parse_hex(parts[3], self.out_width)
+                    events.append((int(parts[2]), v, x))
+            elif len(parts) >= 2:
+                self.periph_lines.append(line[len(PROTOCOL_PREFIX) + 1:])   # e.g. "U 41", "P 12 3 f00"
 
     def _on_exit(self) -> None:
         tail = [l for l in self.design_output[-5:] if l.strip()]
@@ -340,6 +349,24 @@ class SimulationSession:
                 if remaining <= 0:
                     break
             return RunResult(start, self.snapshot, events, overflow, time.perf_counter() - t0)
+
+    def periph_write(self, reg: int, value: int) -> Snapshot:
+        """Write a peripheral register in the harness (UART byte to send, baud rate, sensor value ...)."""
+        with self._lock:
+            self._send(OP_PERIPH, int(reg), int(value) & 0xFFFFFFFF)
+            self.snapshot, _, _ = self._wait_status(timeout=30.0)
+            return self.snapshot
+
+    def settle(self) -> Snapshot:
+        """Clock stopped: give outputs 20 ns to settle (only meaningful with real delays)."""
+        with self._lock:
+            self._send(OP_SETTLE, 0, 0)
+            self.snapshot, _, _ = self._wait_status(timeout=30.0)
+            return self.snapshot
+
+    def take_periph_lines(self) -> list[str]:
+        out, self.periph_lines = self.periph_lines, []
+        return out
 
     def set_recording(self, on: bool) -> Snapshot:
         with self._lock:

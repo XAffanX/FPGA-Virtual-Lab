@@ -21,7 +21,12 @@ class Resource:
 
     @property
     def is_input(self) -> bool:
-        return self.dir == "in"
+        """Can drive an FPGA input ("io" = bidirectional header pin such as a Pmod)."""
+        return self.dir in ("in", "io")
+
+    @property
+    def is_output(self) -> bool:
+        return self.dir in ("out", "io")
 
 
 @dataclass
@@ -76,7 +81,7 @@ class Board:
         return [r for r in self.resources.values() if r.is_input]
 
     def outputs(self) -> list[Resource]:
-        return [r for r in self.resources.values() if not r.is_input]
+        return [r for r in self.resources.values() if r.is_output]
 
 
 def load_board(board_id: str = "basys3", path: Path | None = None) -> Board:
