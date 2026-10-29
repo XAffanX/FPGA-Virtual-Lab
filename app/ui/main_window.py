@@ -9,7 +9,7 @@ from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import (QComboBox, QDockWidget, QFileDialog, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
                                QMainWindow, QMenu, QMessageBox, QStackedWidget, QToolBar, QToolButton, QWidget)
 
-from app import APP_NAME, __version__
+from app import APP_NAME, AUTHOR, AUTHOR_URL, __version__
 from app.board.board import available_boards, get_board
 from app.hardware.virtual_board import HwState, VirtualBoard
 from app.ui import theme
@@ -81,8 +81,8 @@ class MainWindow(QMainWindow):
         self._timer.timeout.connect(self._tick)
         self._timer.start(1000)
         self._on_state(self.vb.state)
-        self.log("info", f"{APP_NAME} {__version__} ready: {self.board.virtual_name} is powered OFF - switch it "
-                         "on to begin.")
+        self.log("info", f"{APP_NAME} {__version__} by {AUTHOR} ({AUTHOR_URL}) ready: {self.board.virtual_name} "
+                         "is powered OFF - switch it on to begin.")
 
     # ================================================================== UI construction
     def _build_ui(self):

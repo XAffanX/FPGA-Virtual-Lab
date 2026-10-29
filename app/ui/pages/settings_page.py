@@ -1,10 +1,11 @@
 """Settings: tool locations, Vivado integration, defaults, shortcuts."""
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QCheckBox, QFileDialog, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
                                QPushButton, QScrollArea, QSpinBox, QVBoxLayout, QWidget)
 
-from app import APP_NAME, __version__
+from app import APP_NAME, AUTHOR, AUTHOR_URL, REPO_URL, __version__
 from app.ui import theme
 
 
@@ -78,11 +79,15 @@ class SettingsPage(QScrollArea):
             "<tr><td><b>Arrows, Space</b></td><td>hold BTNU/BTND/BTNL/BTNR, BTNC</td></tr>"
             "<tr><td><b>Right-click / Shift+click</b></td><td>latch a pushbutton</td></tr></table>"))
 
-        about = QLabel(f"<b>{APP_NAME} {__version__}</b> - a virtual Digilent Basys 3 for bitstreams built in "
-                       "AMD Vivado. The design behind a .bit is taken from its routed checkpoint (exported by "
-                       "Vivado) and simulated with Icarus Verilog using Xilinx's UNISIM primitive models.")
+        about = QLabel(f"<b>{APP_NAME} {__version__}</b> &nbsp;·&nbsp; created by <b>{AUTHOR}</b> - "
+                       f"<a href='{AUTHOR_URL}' style='color:{theme.ACCENT}'>{AUTHOR_URL}</a><br>"
+                       f"Project: <a href='{REPO_URL}' style='color:{theme.ACCENT}'>{REPO_URL}</a><br><br>"
+                       "Virtual Digilent boards for bitstreams built in AMD Vivado. The design behind a .bit is "
+                       "taken from its routed checkpoint (exported by Vivado) and simulated with Icarus Verilog "
+                       "using Xilinx's UNISIM primitive models.")
         about.setWordWrap(True)
-        about.setObjectName("hint")
+        about.setTextFormat(Qt.RichText)
+        about.setOpenExternalLinks(True)
 
         lay = QVBoxLayout(body)
         lay.setContentsMargins(16, 12, 16, 12)
