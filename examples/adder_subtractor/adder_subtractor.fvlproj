@@ -1,0 +1,57 @@
+{
+  "format": "fvl-project-1",
+  "name": "Project C - 2-bit adder/subtractor",
+  "board": "basys3",
+  "description": "A = SW1..0, B = SW3..2, SW15 = subtract. Result on LED1..0, carry LED2, overflow LED3.",
+  "sources": [
+    "full_adder.v",
+    "adder_subtractor.v"
+  ],
+  "top": "adder_subtractor",
+  "xdc": "adder_subtractor.xdc",
+  "language": "auto",
+  "power_on_init": true,
+  "reset": {
+    "port": "",
+    "active_high": true,
+    "cycles": 4
+  },
+  "simulation": {
+    "speed": "normal",
+    "record_waveforms": true
+  },
+  "mapping": {
+    "led[0]": "LED0",
+    "led[1]": "LED1",
+    "led[2]": "LED2",
+    "led[3]": "LED3",
+    "led[4]": "LED4",
+    "led[5]": "LED5",
+    "led[6]": "LED6",
+    "led[7]": "LED7",
+    "led[8]": "LED8",
+    "led[9]": "LED9",
+    "led[10]": "LED10",
+    "led[11]": "LED11",
+    "led[12]": "LED12",
+    "led[13]": "LED13",
+    "led[14]": "LED14",
+    "led[15]": "LED15",
+    "sw[0]": "SW0",
+    "sw[1]": "SW1",
+    "sw[2]": "SW2",
+    "sw[3]": "SW3",
+    "sw[4]": "SW4",
+    "sw[5]": "SW5",
+    "sw[6]": "SW6",
+    "sw[7]": "SW7",
+    "sw[8]": "SW8",
+    "sw[9]": "SW9",
+    "sw[10]": "SW10",
+    "sw[11]": "SW11",
+    "sw[12]": "SW12",
+    "sw[13]": "SW13",
+    "sw[14]": "SW14",
+    "sw[15]": "SW15"
+  }
+}

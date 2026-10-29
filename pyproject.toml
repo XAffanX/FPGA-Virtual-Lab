@@ -1,0 +1,17 @@
+[project]
+name = "fpga-virtual-lab"
+version = "1.1.0"
+description = "Virtual Digilent Basys 3 FPGA board driven by a real Verilog simulator (Icarus Verilog)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["PySide6>=6.6,<7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6.3"]
+
+[project.gui-scripts]
+fpga-virtual-lab = "main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

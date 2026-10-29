@@ -1,0 +1,490 @@
+{
+  "id": "basys3",
+  "name": "Digilent Basys 3",
+  "virtual_name": "virtual_basys3",
+  "fpga": "Xilinx Artix-7 XC7A35T-1CPG236C",
+  "part": "xc7a35tcpg236",
+  "idcode": "0x0362D093",
+  "source": "Pin data from Digilent Basys-3-Master.xdc",
+  "clock": {
+    "resource": "CLK100MHZ",
+    "frequency_hz": 100000000,
+    "period_ns": 10.0
+  },
+  "seven_segment": {
+    "digits": 4,
+    "segments": [
+      "SEG_A",
+      "SEG_B",
+      "SEG_C",
+      "SEG_D",
+      "SEG_E",
+      "SEG_F",
+      "SEG_G"
+    ],
+    "dp": "SEG_DP",
+    "anodes": [
+      "AN0",
+      "AN1",
+      "AN2",
+      "AN3"
+    ],
+    "segments_active_low": true,
+    "anodes_active_low": true
+  },
+  "leds_active_high": true,
+  "resources": [
+    {
+      "id": "CLK100MHZ",
+      "kind": "clock",
+      "dir": "in",
+      "pin": "W5",
+      "xdc_name": "clk",
+      "label": "100 MHz oscillator"
+    },
+    {
+      "id": "SW0",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "V17",
+      "xdc_name": "sw[0]",
+      "label": "SW0"
+    },
+    {
+      "id": "SW1",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "V16",
+      "xdc_name": "sw[1]",
+      "label": "SW1"
+    },
+    {
+      "id": "SW2",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "W16",
+      "xdc_name": "sw[2]",
+      "label": "SW2"
+    },
+    {
+      "id": "SW3",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "W17",
+      "xdc_name": "sw[3]",
+      "label": "SW3"
+    },
+    {
+      "id": "SW4",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "W15",
+      "xdc_name": "sw[4]",
+      "label": "SW4"
+    },
+    {
+      "id": "SW5",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "V15",
+      "xdc_name": "sw[5]",
+      "label": "SW5"
+    },
+    {
+      "id": "SW6",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "W14",
+      "xdc_name": "sw[6]",
+      "label": "SW6"
+    },
+    {
+      "id": "SW7",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "W13",
+      "xdc_name": "sw[7]",
+      "label": "SW7"
+    },
+    {
+      "id": "SW8",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "V2",
+      "xdc_name": "sw[8]",
+      "label": "SW8"
+    },
+    {
+      "id": "SW9",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "T3",
+      "xdc_name": "sw[9]",
+      "label": "SW9"
+    },
+    {
+      "id": "SW10",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "T2",
+      "xdc_name": "sw[10]",
+      "label": "SW10"
+    },
+    {
+      "id": "SW11",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "R3",
+      "xdc_name": "sw[11]",
+      "label": "SW11"
+    },
+    {
+      "id": "SW12",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "W2",
+      "xdc_name": "sw[12]",
+      "label": "SW12"
+    },
+    {
+      "id": "SW13",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "U1",
+      "xdc_name": "sw[13]",
+      "label": "SW13"
+    },
+    {
+      "id": "SW14",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "T1",
+      "xdc_name": "sw[14]",
+      "label": "SW14"
+    },
+    {
+      "id": "SW15",
+      "kind": "switch",
+      "dir": "in",
+      "pin": "R2",
+      "xdc_name": "sw[15]",
+      "label": "SW15"
+    },
+    {
+      "id": "LED0",
+      "kind": "led",
+      "dir": "out",
+      "pin": "U16",
+      "xdc_name": "led[0]",
+      "label": "LD0"
+    },
+    {
+      "id": "LED1",
+      "kind": "led",
+      "dir": "out",
+      "pin": "E19",
+      "xdc_name": "led[1]",
+      "label": "LD1"
+    },
+    {
+      "id": "LED2",
+      "kind": "led",
+      "dir": "out",
+      "pin": "U19",
+      "xdc_name": "led[2]",
+      "label": "LD2"
+    },
+    {
+      "id": "LED3",
+      "kind": "led",
+      "dir": "out",
+      "pin": "V19",
+      "xdc_name": "led[3]",
+      "label": "LD3"
+    },
+    {
+      "id": "LED4",
+      "kind": "led",
+      "dir": "out",
+      "pin": "W18",
+      "xdc_name": "led[4]",
+      "label": "LD4"
+    },
+    {
+      "id": "LED5",
+      "kind": "led",
+      "dir": "out",
+      "pin": "U15",
+      "xdc_name": "led[5]",
+      "label": "LD5"
+    },
+    {
+      "id": "LED6",
+      "kind": "led",
+      "dir": "out",
+      "pin": "U14",
+      "xdc_name": "led[6]",
+      "label": "LD6"
+    },
+    {
+      "id": "LED7",
+      "kind": "led",
+      "dir": "out",
+      "pin": "V14",
+      "xdc_name": "led[7]",
+      "label": "LD7"
+    },
+    {
+      "id": "LED8",
+      "kind": "led",
+      "dir": "out",
+      "pin": "V13",
+      "xdc_name": "led[8]",
+      "label": "LD8"
+    },
+    {
+      "id": "LED9",
+      "kind": "led",
+      "dir": "out",
+      "pin": "V3",
+      "xdc_name": "led[9]",
+      "label": "LD9"
+    },
+    {
+      "id": "LED10",
+      "kind": "led",
+      "dir": "out",
+      "pin": "W3",
+      "xdc_name": "led[10]",
+      "label": "LD10"
+    },
+    {
+      "id": "LED11",
+      "kind": "led",
+      "dir": "out",
+      "pin": "U3",
+      "xdc_name": "led[11]",
+      "label": "LD11"
+    },
+    {
+      "id": "LED12",
+      "kind": "led",
+      "dir": "out",
+      "pin": "P3",
+      "xdc_name": "led[12]",
+      "label": "LD12"
+    },
+    {
+      "id": "LED13",
+      "kind": "led",
+      "dir": "out",
+      "pin": "N3",
+      "xdc_name": "led[13]",
+      "label": "LD13"
+    },
+    {
+      "id": "LED14",
+      "kind": "led",
+      "dir": "out",
+      "pin": "P1",
+      "xdc_name": "led[14]",
+      "label": "LD14"
+    },
+    {
+      "id": "LED15",
+      "kind": "led",
+      "dir": "out",
+      "pin": "L1",
+      "xdc_name": "led[15]",
+      "label": "LD15"
+    },
+    {
+      "id": "BTNC",
+      "kind": "button",
+      "dir": "in",
+      "pin": "U18",
+      "xdc_name": "btnC",
+      "label": "BTNC"
+    },
+    {
+      "id": "BTNU",
+      "kind": "button",
+      "dir": "in",
+      "pin": "T18",
+      "xdc_name": "btnU",
+      "label": "BTNU"
+    },
+    {
+      "id": "BTNL",
+      "kind": "button",
+      "dir": "in",
+      "pin": "W19",
+      "xdc_name": "btnL",
+      "label": "BTNL"
+    },
+    {
+      "id": "BTNR",
+      "kind": "button",
+      "dir": "in",
+      "pin": "T17",
+      "xdc_name": "btnR",
+      "label": "BTNR"
+    },
+    {
+      "id": "BTND",
+      "kind": "button",
+      "dir": "in",
+      "pin": "U17",
+      "xdc_name": "btnD",
+      "label": "BTND"
+    },
+    {
+      "id": "SEG_A",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "W7",
+      "xdc_name": "seg[0]",
+      "label": "CA (segment A, active low)"
+    },
+    {
+      "id": "SEG_B",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "W6",
+      "xdc_name": "seg[1]",
+      "label": "CB (segment B, active low)"
+    },
+    {
+      "id": "SEG_C",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "U8",
+      "xdc_name": "seg[2]",
+      "label": "CC (segment C, active low)"
+    },
+    {
+      "id": "SEG_D",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "V8",
+      "xdc_name": "seg[3]",
+      "label": "CD (segment D, active low)"
+    },
+    {
+      "id": "SEG_E",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "U5",
+      "xdc_name": "seg[4]",
+      "label": "CE (segment E, active low)"
+    },
+    {
+      "id": "SEG_F",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "V5",
+      "xdc_name": "seg[5]",
+      "label": "CF (segment F, active low)"
+    },
+    {
+      "id": "SEG_G",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "U7",
+      "xdc_name": "seg[6]",
+      "label": "CG (segment G, active low)"
+    },
+    {
+      "id": "SEG_DP",
+      "kind": "segment",
+      "dir": "out",
+      "pin": "V7",
+      "xdc_name": "dp",
+      "label": "DP (decimal point, active low)"
+    },
+    {
+      "id": "AN0",
+      "kind": "anode",
+      "dir": "out",
+      "pin": "U2",
+      "xdc_name": "an[0]",
+      "label": "AN0 (digit 0 enable, active low)"
+    },
+    {
+      "id": "AN1",
+      "kind": "anode",
+      "dir": "out",
+      "pin": "U4",
+      "xdc_name": "an[1]",
+      "label": "AN1 (digit 1 enable, active low)"
+    },
+    {
+      "id": "AN2",
+      "kind": "anode",
+      "dir": "out",
+      "pin": "V4",
+      "xdc_name": "an[2]",
+      "label": "AN2 (digit 2 enable, active low)"
+    },
+    {
+      "id": "AN3",
+      "kind": "anode",
+      "dir": "out",
+      "pin": "W4",
+      "xdc_name": "an[3]",
+      "label": "AN3 (digit 3 enable, active low)"
+    }
+  ],
+  "unsupported_pins": {
+    "J1": "Pmod JA pin 1",
+    "L2": "Pmod JA pin 2",
+    "J2": "Pmod JA pin 3",
+    "G2": "Pmod JA pin 4",
+    "H1": "Pmod JA pin 7",
+    "K2": "Pmod JA pin 8",
+    "H2": "Pmod JA pin 9",
+    "G3": "Pmod JA pin 10",
+    "A14": "Pmod JB pin 1",
+    "A16": "Pmod JB pin 2",
+    "B15": "Pmod JB pin 3",
+    "B16": "Pmod JB pin 4",
+    "A15": "Pmod JB pin 7",
+    "A17": "Pmod JB pin 8",
+    "C15": "Pmod JB pin 9",
+    "C16": "Pmod JB pin 10",
+    "K17": "Pmod JC pin 1",
+    "M18": "Pmod JC pin 2",
+    "N17": "Pmod JC pin 3",
+    "P18": "Pmod JC pin 4",
+    "L17": "Pmod JC pin 7",
+    "M19": "Pmod JC pin 8",
+    "P17": "Pmod JC pin 9",
+    "R18": "Pmod JC pin 10",
+    "J3": "Pmod JXADC pin 1",
+    "L3": "Pmod JXADC pin 2",
+    "M2": "Pmod JXADC pin 3",
+    "N2": "Pmod JXADC pin 4",
+    "K3": "Pmod JXADC pin 7",
+    "M3": "Pmod JXADC pin 8",
+    "M1": "Pmod JXADC pin 9",
+    "N1": "Pmod JXADC pin 10",
+    "G19": "VGA vgaRed[0]",
+    "H19": "VGA vgaRed[1]",
+    "J19": "VGA vgaRed[2]",
+    "N19": "VGA vgaRed[3]",
+    "N18": "VGA vgaBlue[0]",
+    "L18": "VGA vgaBlue[1]",
+    "K18": "VGA vgaBlue[2]",
+    "J18": "VGA vgaBlue[3]",
+    "J17": "VGA vgaGreen[0]",
+    "H17": "VGA vgaGreen[1]",
+    "G17": "VGA vgaGreen[2]",
+    "D17": "VGA vgaGreen[3]",
+    "P19": "VGA Hsync",
+    "R19": "VGA Vsync",
+    "B18": "USB-UART RsRx",
+    "A18": "USB-UART RsTx",
+    "C17": "USB HID PS2Clk",
+    "B17": "USB HID PS2Data"
+  }
+}
