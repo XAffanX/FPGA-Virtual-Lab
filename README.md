@@ -13,6 +13,17 @@ Pins come from Digilent's master XDC files; the Nexys file is included under `co
 Pins of peripherals that aren't simulated (DDR2, Ethernet, audio out, microSD, PS/2, XADC analog
 inputs) are recognised and reported as not simulated.
 
+## Screenshots
+
+![Virtual Basys 3 board with a VGA test bitstream selected](docs/images/01-basys3-board.png)
+*The virtual Basys 3: switches, LEDs, buttons, seven-segment display, Pmod headers and the
+status panel, with `vga_test.bit` selected and the board powered off.*
+
+| Devices: VGA screen | Simulation controls | Waveform viewer |
+|---|---|---|
+| ![VGA screen tab](docs/images/02-devices-vga-screen.png) | ![Simulation page](docs/images/03-simulation-controls.png) | ![Waveform viewer](docs/images/04-waveform-viewer.png) |
+| 640×480 VGA output, plus UART terminal and Pmod tabs | Clock speed, reset input, timing simulation and VCD recording; live I/O monitor and pin map | Recorded signals with zoom, radix and VCD export |
+
 ## Workflow
 
 1. In Vivado: write the design, apply the board's XDC, run implementation, and generate the
